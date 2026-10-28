@@ -209,68 +209,6 @@
       <h1 class="sr-only">RAG Holdings: start, run and grow your business in the UAE, Qatar, Singapore and India. Co-Presenting Sponsor of Nostalgia 2026.</h1>
     </section>
 
-    <!-- ============ CORPORATE DECK (PDF) ============ -->
-    <section id="deck" class="bg-navy-grad relative scroll-mt-20 py-16 sm:py-24" x-data="deckViewer">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between" data-reveal>
-          <div class="max-w-2xl">
-            <p class="eyebrow">Corporate deck 2026</p>
-            <h2 class="h-display mt-4 text-[2rem] sm:text-5xl lg:text-6xl">See the <span class="gold-text">full picture</span></h2>
-            <p class="mt-4 text-base leading-relaxed text-white/70 sm:text-lg">Our story, leadership, offices and services in 32 pages. Flip through it here or download it to read later.</p>
-          </div>
-          <div class="flex flex-wrap gap-3">
-            <a :href="pdf" download="RAG-Holdings-Corporate-Deck-2026.pdf" @click="if (!unlocked) { $event.preventDefault(); openGate('download') }"
-               class="btn-gold inline-flex h-[52px] items-center gap-2 rounded-xl px-6">
-              <svg x-show="!unlocked" class="h-5 w-5"><use href="#i-lock"/></svg>
-              <svg x-show="unlocked" x-cloak class="h-5 w-5"><use href="#i-down"/></svg> Download PDF <span class="font-semibold opacity-70">10.6 MB</span>
-            </a>
-            <a :href="pdf" target="_blank" rel="noopener" @click="if (!unlocked) { $event.preventDefault(); openGate('open') }"
-               class="btn-glass inline-flex h-[52px] items-center gap-2 rounded-xl px-6"><svg x-show="!unlocked" class="h-4 w-4"><use href="#i-lock"/></svg> Open full PDF</a>
-          </div>
-        </div>
-
-        <div data-reveal class="relative mx-auto mt-10 max-w-5xl">
-          <div class="deck-locked" :class="unlocked && 'is-unlocked'" :inert="!unlocked">
-          <div class="relative overflow-hidden rounded-[1.25rem] border border-white/10 bg-ink-deep shadow-2xl shadow-black/40"
-               @touchstart.passive="touchX = $event.touches[0].clientX"
-               @touchend.passive="swipe($event.changedTouches[0].clientX)"
-               @keydown.left="prev()" @keydown.right="next()">
-            <img :src="src(i)" :alt="'Corporate deck, page ' + (i + 1) + ' of ' + n" width="1280" height="720" class="aspect-video w-full object-contain" loading="lazy" decoding="async">
-            <button type="button" @click="prev()" :disabled="i === 0" aria-label="Previous page"
-                    class="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-ink/70 backdrop-blur transition hover:border-gold disabled:opacity-0 sm:left-5"><svg class="h-5 w-5"><use href="#i-left"/></svg></button>
-            <button type="button" @click="next()" :disabled="i === n - 1" aria-label="Next page"
-                    class="absolute right-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-ink/70 backdrop-blur transition hover:border-gold disabled:opacity-0 sm:right-5"><svg class="h-5 w-5"><use href="#i-right"/></svg></button>
-            <span class="absolute bottom-3 right-3 rounded-full bg-ink/80 px-3 py-1 text-xs font-bold backdrop-blur sm:bottom-5 sm:right-5">
-              <span class="text-gold-light" x-text="String(i + 1).padStart(2, '0')"></span> / <span x-text="n"></span>
-            </span>
-          </div>
-
-          <div x-ref="strip" class="mt-4 flex snap-x gap-3 overflow-x-auto pb-3 [scrollbar-width:thin]">
-            <template x-for="k in n" :key="k">
-              <button type="button" @click="go(k - 1)" :aria-label="'Show page ' + k" :aria-current="i === k - 1"
-                      class="w-28 shrink-0 snap-start overflow-hidden rounded-lg ring-2 transition sm:w-36"
-                      :class="i === k - 1 ? 'ring-gold' : 'ring-transparent opacity-50 hover:opacity-100'">
-                <img :src="thumb(k - 1)" alt="" width="320" height="180" class="aspect-video w-full object-cover" loading="lazy" decoding="async">
-              </button>
-            </template>
-          </div>
-          </div>
-
-          <!-- lock -->
-          <div x-show="!unlocked" class="absolute inset-0 grid place-items-center p-4">
-            <div class="max-w-sm rounded-2xl border border-white/15 bg-ink/80 p-6 text-center shadow-2xl shadow-black/50 backdrop-blur-md sm:p-8">
-              <span class="icon-gold mx-auto h-14 w-14 rounded-full"><svg class="h-6 w-6"><use href="#i-lock"/></svg></span>
-              <p class="mt-4 text-lg font-extrabold uppercase sm:text-xl">Unlock the full deck</p>
-              <p class="mt-2 text-sm leading-relaxed text-white/70">Share a few details to view all 32 pages and download the PDF.</p>
-              <button type="button" @click="openGate('view')" class="btn-gold mt-5 inline-flex h-12 items-center gap-2 rounded-xl px-6">
-                Unlock the deck <svg class="h-4 w-4"><use href="#i-arrow"/></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- ============ THANK YOU + RAG IN THREE LINES ============ -->
     <section id="about" class="bg-white py-16 text-ink sm:py-24">
       <div class="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8">
@@ -332,6 +270,68 @@
         <div data-reveal class="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-5">
           <img src="assets/img/iso-badges.png" width="250" height="128" alt="ISO 27001:2013 and ISO 9001:2015 certified" class="h-16 w-auto rounded-full bg-ink p-1" loading="lazy" decoding="async">
           <p class="text-center text-sm font-semibold text-ink/65 sm:text-left">3 centres in Dubai. ISO 27001:2013 and ISO 9001:2015 certified.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CORPORATE DECK (PDF) ============ -->
+    <section id="deck" class="bg-navy-grad relative scroll-mt-20 py-16 sm:py-24" x-data="deckViewer">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between" data-reveal>
+          <div class="max-w-2xl">
+            <p class="eyebrow">Corporate deck 2026</p>
+            <h2 class="h-display mt-4 text-[2rem] sm:text-5xl lg:text-6xl">See the <span class="gold-text">full picture</span></h2>
+            <p class="mt-4 text-base leading-relaxed text-white/70 sm:text-lg">Our story, leadership, offices and services in 32 pages. Flip through it here or download it to read later.</p>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <a :href="pdf" download="RAG-Holdings-Corporate-Deck-2026.pdf" @click="if (!unlocked) { $event.preventDefault(); openGate('download') }"
+               class="btn-gold inline-flex h-[52px] items-center gap-2 rounded-xl px-6">
+              <svg x-show="!unlocked" class="h-5 w-5"><use href="#i-lock"/></svg>
+              <svg x-show="unlocked" x-cloak class="h-5 w-5"><use href="#i-down"/></svg> Download PDF <span class="font-semibold opacity-70">10.6 MB</span>
+            </a>
+            <a :href="pdf" target="_blank" rel="noopener" @click="if (!unlocked) { $event.preventDefault(); openGate('open') }"
+               class="btn-glass inline-flex h-[52px] items-center gap-2 rounded-xl px-6"><svg x-show="!unlocked" class="h-4 w-4"><use href="#i-lock"/></svg> Open full PDF</a>
+          </div>
+        </div>
+
+        <div data-reveal class="relative mx-auto mt-10 max-w-5xl">
+          <div class="deck-locked" :class="unlocked && 'is-unlocked'" :inert="!unlocked">
+          <div class="relative overflow-hidden rounded-[1.25rem] border border-white/10 bg-ink-deep shadow-2xl shadow-black/40"
+               @touchstart.passive="touchX = $event.touches[0].clientX"
+               @touchend.passive="swipe($event.changedTouches[0].clientX)"
+               @keydown.left="prev()" @keydown.right="next()">
+            <img :src="src(i)" :alt="'Corporate deck, page ' + (i + 1) + ' of ' + n" width="1280" height="720" class="aspect-video w-full object-contain" loading="lazy" decoding="async">
+            <button type="button" @click="prev()" :disabled="i === 0" aria-label="Previous page"
+                    class="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-ink/70 backdrop-blur transition hover:border-gold disabled:opacity-0 sm:left-5"><svg class="h-5 w-5"><use href="#i-left"/></svg></button>
+            <button type="button" @click="next()" :disabled="i === n - 1" aria-label="Next page"
+                    class="absolute right-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-ink/70 backdrop-blur transition hover:border-gold disabled:opacity-0 sm:right-5"><svg class="h-5 w-5"><use href="#i-right"/></svg></button>
+            <span class="absolute bottom-3 right-3 rounded-full bg-ink/80 px-3 py-1 text-xs font-bold backdrop-blur sm:bottom-5 sm:right-5">
+              <span class="text-gold-light" x-text="String(i + 1).padStart(2, '0')"></span> / <span x-text="n"></span>
+            </span>
+          </div>
+
+          <div x-ref="strip" class="mt-4 flex snap-x gap-3 overflow-x-auto pb-3 [scrollbar-width:thin]">
+            <template x-for="k in n" :key="k">
+              <button type="button" @click="go(k - 1)" :aria-label="'Show page ' + k" :aria-current="i === k - 1"
+                      class="w-28 shrink-0 snap-start overflow-hidden rounded-lg ring-2 transition sm:w-36"
+                      :class="i === k - 1 ? 'ring-gold' : 'ring-transparent opacity-50 hover:opacity-100'">
+                <img :src="thumb(k - 1)" alt="" width="320" height="180" class="aspect-video w-full object-cover" loading="lazy" decoding="async">
+              </button>
+            </template>
+          </div>
+          </div>
+
+          <!-- lock -->
+          <div x-show="!unlocked" class="absolute inset-0 grid place-items-center p-4">
+            <div class="max-w-sm rounded-2xl border border-white/15 bg-ink/80 p-6 text-center shadow-2xl shadow-black/50 backdrop-blur-md sm:p-8">
+              <span class="icon-gold mx-auto h-14 w-14 rounded-full"><svg class="h-6 w-6"><use href="#i-lock"/></svg></span>
+              <p class="mt-4 text-lg font-extrabold uppercase sm:text-xl">Unlock the full deck</p>
+              <p class="mt-2 text-sm leading-relaxed text-white/70">Share a few details to view all 32 pages and download the PDF.</p>
+              <button type="button" @click="openGate('view')" class="btn-gold mt-5 inline-flex h-12 items-center gap-2 rounded-xl px-6">
+                Unlock the deck <svg class="h-4 w-4"><use href="#i-arrow"/></svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -511,6 +511,49 @@
       </div>
     </section>
 
+    <!-- ============ 07 PROOF ============ -->
+    <section id="recognition" class="bg-mist py-16 text-ink sm:py-24">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="text-center" data-reveal>
+          <p class="eyebrow center">Proof</p>
+          <h2 class="h-display mt-4 text-[2rem] sm:text-5xl lg:text-6xl">Recognised for <span class="gold-text">how we work</span></h2>
+        </div>
+
+        <div class="mt-12 grid items-center gap-8 lg:grid-cols-5 lg:gap-12">
+          <img src="assets/img/gptw.jpg" width="900" height="549" alt="Great Place To Work Certified and Best Workplaces in the Middle East 2026 badges" data-reveal class="mx-auto w-full max-w-md lg:col-span-2" loading="lazy" decoding="async">
+          <div class="grid gap-3 sm:grid-cols-2 lg:col-span-3" data-reveal-group>
+            <div data-reveal class="card-light p-5 sm:p-6">
+              <span class="icon-gold h-10 w-10"><svg class="h-5 w-5"><use href="#i-check"/></svg></span>
+              <p class="mt-4 font-extrabold">Great Place To Work® Certified</p>
+              <p class="mt-1 text-sm text-ink/60">UAE, June 2026 to June 2027.</p>
+            </div>
+            <div data-reveal class="card-light p-5 sm:p-6">
+              <span class="icon-gold h-10 w-10"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M11.48 3.5a.56.56 0 011.04 0l2.13 5.11a.56.56 0 00.47.35l5.52.44c.5.04.7.66.32.99l-4.2 3.6a.56.56 0 00-.18.56l1.28 5.38a.56.56 0 01-.84.61l-4.73-2.88a.56.56 0 00-.58 0l-4.73 2.89a.56.56 0 01-.84-.61l1.28-5.39a.56.56 0 00-.18-.56l-4.2-3.6a.56.56 0 01.32-.99l5.52-.44a.56.56 0 00.47-.35l2.13-5.11z"/></svg></span>
+              <p class="mt-4 font-extrabold">Best Workplaces™ in the Middle East 2026</p>
+              <p class="mt-1 text-sm text-ink/60">Ranked 56th in the Small category.</p>
+            </div>
+            <div data-reveal class="card-light p-5 sm:p-6">
+              <span class="icon-gold h-10 w-10"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 21h8m-4-4v4M7 4h10v5a5 5 0 01-10 0V4zM17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3"/></svg></span>
+              <p class="mt-4 font-extrabold">Shortlisted for Consulting Firm of the Year</p>
+              <p class="mt-1 text-sm text-ink/60">Arabian Business Industry Awards 2026. Ceremony on 25 November.</p>
+            </div>
+            <!-- TO CONFIRM with Deeraj: Qatar top 5 wording. Always say "in Qatar", never a global ranking. -->
+            <div data-reveal class="card-light p-5 sm:p-6">
+              <span class="icon-gold h-10 w-10"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l9-3 9 3M5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6"/></svg></span>
+              <p class="mt-4 font-extrabold">Ranked among Qatar's top 5 consulting firms</p>
+              <p class="mt-1 text-sm text-ink/60">By the Ministry of Commerce and Industry, announced 13 January 2026.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TO CONFIRM with Deeraj: what the NSRCEL work was before using a stronger verb. -->
+        <div data-reveal class="mt-8 flex flex-col gap-4 rounded-3xl bg-ink p-6 text-white sm:flex-row sm:items-center sm:gap-8 sm:p-8">
+          <p class="shrink-0 text-xs font-bold uppercase tracking-[.28em] text-gold">Worked with</p>
+          <p class="text-base leading-relaxed text-white/80 sm:text-lg">We have worked with the IIM Bangalore incubation centre, NSRCEL, on emerging startup ideas. Our Idea HQ in Dubai is a certified incubator under the Hamdan Innovation Incubator.</p>
+        </div>
+      </div>
+    </section>
+
     <!-- ============ 06 NOW IN KERALA ============ -->
     <section id="kerala" class="scroll-mt-20 bg-white py-16 text-ink sm:py-24">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -554,49 +597,6 @@
               <a href="https://www.ragroup.ae/rag-holdings-at-iim-kozhikode" target="_blank" rel="noopener" class="btn-glass inline-flex h-12 items-center rounded-xl px-6">Read about our IIMK session</a>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ 07 PROOF ============ -->
-    <section id="recognition" class="bg-mist py-16 text-ink sm:py-24">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="text-center" data-reveal>
-          <p class="eyebrow center">Proof</p>
-          <h2 class="h-display mt-4 text-[2rem] sm:text-5xl lg:text-6xl">Recognised for <span class="gold-text">how we work</span></h2>
-        </div>
-
-        <div class="mt-12 grid items-center gap-8 lg:grid-cols-5 lg:gap-12">
-          <img src="assets/img/gptw.jpg" width="900" height="549" alt="Great Place To Work Certified and Best Workplaces in the Middle East 2026 badges" data-reveal class="mx-auto w-full max-w-md lg:col-span-2" loading="lazy" decoding="async">
-          <div class="grid gap-3 sm:grid-cols-2 lg:col-span-3" data-reveal-group>
-            <div data-reveal class="card-light p-5 sm:p-6">
-              <span class="icon-gold h-10 w-10"><svg class="h-5 w-5"><use href="#i-check"/></svg></span>
-              <p class="mt-4 font-extrabold">Great Place To Work® Certified</p>
-              <p class="mt-1 text-sm text-ink/60">UAE, June 2026 to June 2027.</p>
-            </div>
-            <div data-reveal class="card-light p-5 sm:p-6">
-              <span class="icon-gold h-10 w-10"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M11.48 3.5a.56.56 0 011.04 0l2.13 5.11a.56.56 0 00.47.35l5.52.44c.5.04.7.66.32.99l-4.2 3.6a.56.56 0 00-.18.56l1.28 5.38a.56.56 0 01-.84.61l-4.73-2.88a.56.56 0 00-.58 0l-4.73 2.89a.56.56 0 01-.84-.61l1.28-5.39a.56.56 0 00-.18-.56l-4.2-3.6a.56.56 0 01.32-.99l5.52-.44a.56.56 0 00.47-.35l2.13-5.11z"/></svg></span>
-              <p class="mt-4 font-extrabold">Best Workplaces™ in the Middle East 2026</p>
-              <p class="mt-1 text-sm text-ink/60">Ranked 56th in the Small category.</p>
-            </div>
-            <div data-reveal class="card-light p-5 sm:p-6">
-              <span class="icon-gold h-10 w-10"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 21h8m-4-4v4M7 4h10v5a5 5 0 01-10 0V4zM17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3"/></svg></span>
-              <p class="mt-4 font-extrabold">Shortlisted for Consulting Firm of the Year</p>
-              <p class="mt-1 text-sm text-ink/60">Arabian Business Industry Awards 2026. Ceremony on 25 November.</p>
-            </div>
-            <!-- TO CONFIRM with Deeraj: Qatar top 5 wording. Always say "in Qatar", never a global ranking. -->
-            <div data-reveal class="card-light p-5 sm:p-6">
-              <span class="icon-gold h-10 w-10"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l9-3 9 3M5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6"/></svg></span>
-              <p class="mt-4 font-extrabold">Ranked among Qatar's top 5 consulting firms</p>
-              <p class="mt-1 text-sm text-ink/60">By the Ministry of Commerce and Industry, announced 13 January 2026.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- TO CONFIRM with Deeraj: what the NSRCEL work was before using a stronger verb. -->
-        <div data-reveal class="mt-8 flex flex-col gap-4 rounded-3xl bg-ink p-6 text-white sm:flex-row sm:items-center sm:gap-8 sm:p-8">
-          <p class="shrink-0 text-xs font-bold uppercase tracking-[.28em] text-gold">Worked with</p>
-          <p class="text-base leading-relaxed text-white/80 sm:text-lg">We have worked with the IIM Bangalore incubation centre, NSRCEL, on emerging startup ideas. Our Idea HQ in Dubai is a certified incubator under the Hamdan Innovation Incubator.</p>
         </div>
       </div>
     </section>
