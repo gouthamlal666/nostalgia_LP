@@ -1,83 +1,63 @@
 <!doctype html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>RAG Holdings · Start, run and grow your business · Nostalgia 2026</title>
   <meta name="description" content="RAG Holdings sets up companies in the UAE, Qatar, Singapore and India. Co-Presenting Sponsor of Nostalgia 2026 at IIM Kozhikode.">
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#001024">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <script src="https://cdn.tailwindcss.com/3.4.16"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: { sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+          fontFamily: { sans: ['Montserrat', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
           colors: {
-            // dark surfaces from the reference: black stage, carbon band, graphite text, control charcoal
-            navy: { 950: '#000000', 900: '#111111', 800: '#1d1d1f', 700: '#333336' },
-            polar: '#f5f5f7', steel: '#86868b', divider: '#6e6e73',
-            gold: { 300: '#EBD38E', 400: '#DDBB62', 500: '#C9A24A', 600: '#A9822F' },
+            // brand navy #001024 with a deeper and two lighter steps for cards and lines
+            ink: { DEFAULT: '#001024', deep: '#000a18', 2: '#061b3d', 3: '#0c2852' },
+            gold: { light: '#F0D58E', DEFAULT: '#C79942', dark: '#A07628' },
+            mist: '#f5f7fb',
           },
         },
       },
     }
   </script>
-  <!-- Alpine plugins (collapse for accordions, intersect for the counters) must load before Alpine core -->
+
   <script>
     document.addEventListener('alpine:init', () => {
-      Alpine.data('heroSlider', () => ({
-        slides: [
-          { img: 'iimk-hall.jpg', pos: 'center', caption: 'RAG Holdings at IIM Kozhikode, 29 August 2026' },
-          { img: 'calicut-inauguration.jpg', pos: '50% 30%', caption: 'Calicut office opening, 31 August 2026' },
-          { img: 'chief-minister.jpg', pos: '40% 40%', caption: 'With Shri V. D. Satheesan, Chief Minister of Kerala' },
-          { img: 'tharoor-conclave.jpg', pos: '58% 25%', caption: 'RAG Business Conclave 2025, Grand Hyatt Dubai' },
-          { img: 'rag-club.jpg', pos: '50% 45%', caption: 'RAG Club Chapter 6, 22 October 2026' },
-        ],
-        current: 0,
-        previous: null,
-        progress: 0,
-        duration: 6000,
-        hover: false,
-        touchX: null,
+      // hero: YouTube video playing muted in a loop behind fixed copy, with a sound toggle
+      Alpine.data('hero', () => ({
+        id: 'BVARHh4HPbA',
+        muted: true,
+        ready: false,
+        get src() {
+          const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          return 'https://www.youtube-nocookie.com/embed/' + this.id + '?autoplay=' + (still ? 0 : 1) + '&mute=1&loop=1&playlist=' + this.id +
+            '&controls=0&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&enablejsapi=1'
+        },
+        // the embed accepts player commands over postMessage when enablejsapi=1
+        cmd(func, args = []) { this.$refs.yt?.contentWindow?.postMessage(JSON.stringify({ event: 'command', func, args }), '*') },
+        loaded() { setTimeout(() => { this.ready = true }, 1200) },
+        // scrolling most of the hero out of view turns the sound off; the button turns it back on
         init() {
-          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-          let last = performance.now()
-          const tick = (now) => {
-            const dt = now - last; last = now
-            if (!this.hover && !document.hidden) {
-              this.progress += dt / this.duration
-              if (this.progress >= 1) this.next()
-            }
-            requestAnimationFrame(tick)
+          const check = () => {
+            if (this.muted) return
+            const r = this.$el.getBoundingClientRect()
+            const visible = Math.max(0, Math.min(r.bottom, innerHeight) - Math.max(r.top, 0))
+            if (visible < r.height * 0.4) this.muteIfPlaying()
           }
-          requestAnimationFrame(tick)
+          addEventListener('scroll', check, { passive: true })
         },
-        go(i) {
-          const n = (i + this.slides.length) % this.slides.length
-          if (n === this.current) return
-          this.previous = this.current; this.current = n; this.progress = 0
-        },
-        // where each card sits in the deck, by its distance from the front card
-        card(i) {
-          const n = this.slides.length, o = (i - this.current + n) % n
-          if (o === 0) return 'transform:rotate(-2deg);opacity:1;z-index:30;filter:none'
-          if (o === 1) return 'transform:translate(8%,-5%) rotate(4deg) scale(.93);opacity:1;z-index:20;filter:brightness(.5)'
-          if (o === 2) return 'transform:translate(15%,-9%) rotate(9deg) scale(.86);opacity:1;z-index:10;filter:brightness(.3)'
-          if (o === n - 1) return 'transform:translate(-70%,6%) rotate(-14deg) scale(.96);opacity:0;z-index:40;filter:none'
-          return 'transform:translate(15%,-9%) rotate(9deg) scale(.8);opacity:0;z-index:0;filter:brightness(.3)'
-        },
-        next() { this.go(this.current + 1) },
-        prev() { this.go(this.current - 1) },
-        swipe(x) {
-          if (this.touchX === null) return
-          const dx = x - this.touchX
-          if (Math.abs(dx) > 50) dx < 0 ? this.next() : this.prev()
-          this.touchX = null
+        muteIfPlaying() { if (!this.muted) { this.muted = true; this.cmd('mute') } },
+        toggleSound() {
+          this.muted = !this.muted
+          if (this.muted) return this.cmd('mute')
+          this.cmd('unMute'); this.cmd('setVolume', [100]); this.cmd('playVideo')
         },
       }))
 
@@ -118,183 +98,318 @@
           const el = e.target
           el.classList.add('is-in'); io.unobserve(el)
           // hand transforms back to hover effects once the reveal has played
-          setTimeout(() => el.removeAttribute('data-reveal'), 1700 + (parseInt(el.style.getPropertyValue('--d')) || 0))
-        }), { rootMargin: '0px 0px -8% 0px', threshold: 0.12 })
+          setTimeout(() => el.removeAttribute('data-reveal'), 1400 + (parseInt(el.style.getPropertyValue('--d')) || 0))
+        }), { rootMargin: '0px 0px -8% 0px', threshold: 0.1 })
         document.querySelectorAll('[data-reveal]').forEach(el => io.observe(el))
       })
-      // gold reading-progress line under the header
-      const bar = () => document.documentElement.style.setProperty('--scroll', (scrollY / Math.max(1, document.documentElement.scrollHeight - innerHeight)).toFixed(4))
-      addEventListener('scroll', bar, { passive: true }); addEventListener('resize', bar)
     })()
   </script>
   <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.14.1/dist/cdn.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.14.1/dist/cdn.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.14.1/dist/cdn.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
 
   <style>
     [x-cloak] { display: none !important; }
+    html { scroll-behavior: smooth; }
     body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
-    body { letter-spacing: -0.011em; font-feature-settings: "cv11", "ss01"; }
-    .text-gold-grad { color: #DDBB62; }
-    /* display type: 600 weight, near-tight tracking */
-    .hero-title { font-weight: 600; font-size: clamp(2.05rem, 5vw, 4rem); line-height: 1.06; letter-spacing: -0.015em; text-wrap: balance; }
-    .display { font-weight: 600; letter-spacing: -0.012em; line-height: 1.08; text-wrap: balance; }
-    .kicker { display: inline-flex; align-items: center; gap: .625rem; font-size: 1.0625rem; font-weight: 600; letter-spacing: -0.01em; }
-    .kicker::before { content: ""; width: .5rem; height: .5rem; border-radius: 9999px; background: currentColor; }
-    /* flat gold pill: the only filled colour on the page */
-    .btn-gold { background: #C9A24A; transition: background-color .2s; }
-    .btn-gold:hover { background: #DDBB62; }
-    .card-lux { position: relative; overflow: hidden; }
-    .card-lux::before { content: ""; position: absolute; inset: 0 auto auto 0; height: 2px; width: 100%; background: #C9A24A;
-      transform: scaleX(0); transform-origin: left; transition: transform .6s cubic-bezier(.16,1,.3,1); }
-    .card-lux:hover::before, .card-lux:focus-visible::before { transform: scaleX(1); }
-    .scroll-line { transform: scaleX(var(--scroll, 0)); transform-origin: left; }
+    @media (min-width: 1024px) { body { padding-bottom: 0; } }
+
+    /* headline type: heavy, uppercase, tight */
+    .h-display { font-weight: 800; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1.02; text-wrap: balance; }
+    .gold-text { background: linear-gradient(100deg, #F6E3AE 0%, #DDB563 35%, #C79942 60%, #A07628 100%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none; }
+    .eyebrow { display: inline-flex; align-items: center; gap: .75rem; font-size: .6875rem; font-weight: 700; letter-spacing: .28em; text-transform: uppercase; color: #C79942; }
+    .eyebrow::before { content: ""; width: 1.75rem; height: 1px; background: linear-gradient(90deg, transparent, #C79942); }
+    .eyebrow.center::after { content: ""; width: 1.75rem; height: 1px; background: linear-gradient(90deg, #C79942, transparent); }
+
+    /* gold gradient button */
+    .btn-gold { background: linear-gradient(110deg, #F0D58E 0%, #C79942 45%, #A07628 75%, #DDB563 100%); background-size: 180% 100%; color: #001024; font-weight: 700;
+      box-shadow: 0 10px 30px -12px rgba(199,153,66,.65), inset 0 1px 0 rgba(255,255,255,.4); transition: background-position .5s ease, transform .2s ease; }
+    .btn-gold:hover { background-position: 100% 0; transform: translateY(-1px); }
+    .btn-glass { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); color: #fff; font-weight: 700; backdrop-filter: blur(8px); transition: background-color .2s, border-color .2s; }
+    .btn-glass:hover { background: rgba(255,255,255,.12); border-color: rgba(240,213,142,.6); }
+
+    /* gold icon square */
+    .icon-gold { display: grid; place-items: center; border-radius: .875rem; color: #001024;
+      background: linear-gradient(135deg, #F0D58E, #C79942 55%, #A07628); box-shadow: 0 8px 20px -10px rgba(199,153,66,.8), inset 0 1px 0 rgba(255,255,255,.45); }
+
+    /* cards on navy and on white */
+    .card-dark { background: linear-gradient(180deg, rgba(12,40,82,.55), rgba(6,27,61,.35)); border: 1px solid rgba(255,255,255,.08); border-radius: 1.25rem; transition: border-color .3s, transform .3s; }
+    .card-dark:hover { border-color: rgba(199,153,66,.45); }
+    .card-light { position: relative; overflow: hidden; background: #fff; border: 1px solid rgba(0,16,36,.08); border-radius: 1.25rem; box-shadow: 0 18px 40px -28px rgba(0,16,36,.35); }
+    .card-light::after { content: ""; position: absolute; right: -2.5rem; top: -2.5rem; width: 7rem; height: 7rem; border-radius: 9999px; background: radial-gradient(circle, rgba(199,153,66,.18), transparent 70%); pointer-events: none; }
+
+    /* navy section backgrounds */
+    .bg-navy { background: #001024; }
+    .bg-navy-grad { background: radial-gradient(80% 50% at 100% 0%, rgba(199,153,66,.10), transparent 60%), linear-gradient(180deg, #061b3d 0%, #001024 100%); }
+
+    /* marquee */
+    @keyframes marquee { to { transform: translateX(-50%); } }
+    .marquee { animation: marquee 38s linear infinite; }
+    .marquee.reverse { animation-direction: reverse; }
+    .text-outline { color: transparent; -webkit-text-stroke: 1.5px rgba(255,255,255,.28); }
+
+    /* corporate deck: blurred and not clickable until unlocked; the blur is on from first paint, before Alpine runs */
+    .deck-locked { filter: blur(12px); pointer-events: none; user-select: none; }
+    .deck-locked.is-unlocked { filter: none; pointer-events: auto; user-select: auto; }
+
+    /* hero video: always cover the box, whatever its shape */
+    .hero-media { container-type: size; }
+    .hero-video { width: max(100cqw, 177.78cqh); height: max(100cqh, 56.25cqw); }
+
+    /* hero photo zoom */
+    @keyframes settle { from { transform: scale(1.1); } to { transform: scale(1); } }
+    .settle { animation: settle 9s cubic-bezier(.22,.61,.36,1) both; }
 
     /* scroll reveals */
-    .reveal-ready [data-reveal] { opacity: 0; transform: translateY(32px); transition: opacity 1.1s cubic-bezier(.16,1,.3,1), transform 1.1s cubic-bezier(.16,1,.3,1); transition-delay: var(--d, 0ms); }
-    .reveal-ready [data-reveal="fade"] { transform: none; }
-    .reveal-ready [data-reveal="line"] { opacity: 1; transform: scaleX(0); transition-duration: 1.4s; }
-    .reveal-ready [data-reveal="image"] { opacity: 1; transform: none; clip-path: inset(14% 0 0 0 round 28px); transition: clip-path 1.4s cubic-bezier(.16,1,.3,1); transition-delay: var(--d, 0ms); }
-    .reveal-ready [data-reveal="image"] img { transform: scale(1.14); transition: transform 1.8s cubic-bezier(.16,1,.3,1); }
+    .reveal-ready [data-reveal] { opacity: 0; transform: translateY(28px); transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1); transition-delay: var(--d, 0ms); }
     .reveal-ready [data-reveal].is-in { opacity: 1; transform: none; }
-    .reveal-ready [data-reveal="image"].is-in { clip-path: inset(0 0 0 0 round 28px); }
-    .reveal-ready [data-reveal="image"].is-in img { transform: scale(1); }
 
-    @keyframes hero-settle { from { transform: scale(1.12); } to { transform: scale(1); } }
-    .hero-settle { animation: hero-settle 9s cubic-bezier(.22, .61, .36, 1) both; }
-    @media (prefers-reduced-motion: reduce) { .hero-settle { animation: none; } }
+    @media (prefers-reduced-motion: reduce) { .settle, .marquee { animation: none; } html { scroll-behavior: auto; } }
   </style>
 </head>
 
-<body class="bg-white font-sans text-navy-900 antialiased"
+<body class="bg-ink font-sans text-white antialiased"
       x-data="{
         topic: '',
-        talk(t = '') { this.topic = t; document.getElementById('contact').scrollIntoView({ behavior: 'smooth' }) }
-      }">
+        popup: false,
+        // the corporate deck stays blurred until the visitor sends the popup form (a soft gate: the files are public)
+        unlocked: false,
+        gate: '',
+        openGate(action) { this.gate = action; this.openPopup() },
+        talk(t = '') { this.topic = t; document.getElementById('contact').scrollIntoView({ behavior: 'smooth' }) },
+        openPopup() { this.popup = true; try { sessionStorage.setItem('ragPopupSeen', '1') } catch (e) {} },
+        init() {
+          // show the popup once per visit, after the visitor has had time to read the hero
+          let seen = false
+          try { seen = sessionStorage.getItem('ragPopupSeen') === '1' } catch (e) {}
+          if (!seen) setTimeout(() => { if (!this.popup) this.openPopup() }, 12000)
+          try { this.unlocked = localStorage.getItem('ragDeckUnlocked') === '1' } catch (e) {}
+          this.$watch('popup', open => { if (!open) this.gate = '' })
+        }
+      }"
+      @keydown.escape.window="popup = false">
 
-  <!-- ============ TOP BAR ============ -->
-  <header class="fixed inset-x-0 top-0 z-40 bg-navy-900/80 backdrop-blur-xl backdrop-saturate-150">
-    <div class="scroll-line absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-gold-300 via-gold-500 to-gold-600" aria-hidden="true"></div>
-    <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+  <!-- icon sprite -->
+  <svg width="0" height="0" class="absolute" aria-hidden="true">
+    <symbol id="i-wa" viewBox="0 0 24 24"><path fill="currentColor" d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.21 3.08.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35zM12.04 21.5h-.01a9.4 9.4 0 01-4.8-1.31l-.34-.2-3.57.93.95-3.48-.22-.36a9.43 9.43 0 01-1.45-5.03c0-5.2 4.24-9.44 9.45-9.44a9.4 9.4 0 016.68 2.77 9.38 9.38 0 012.76 6.68c0 5.21-4.24 9.44-9.45 9.44zm8.04-17.48A11.3 11.3 0 0012.04.7C5.78.7.68 5.8.68 12.06c0 2 .52 3.96 1.52 5.68L.58 23.3l5.7-1.5a11.3 11.3 0 005.75 1.47h.01c6.26 0 11.36-5.1 11.36-11.36 0-3.03-1.18-5.89-3.32-8.03z"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.5 4.49a1 1 0 01-.5 1.21l-2.26 1.13a11.04 11.04 0 005.52 5.52l1.13-2.26a1 1 0 011.21-.5l4.49 1.5a1 1 0 01.68.95V19a2 2 0 01-2 2h-1C9.72 21 3 14.28 3 6V5z"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6l6 6-6 6"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M17.66 16.66L13.41 20.9a2 2 0 01-2.83 0l-4.24-4.24a8 8 0 1111.32 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v12m0 0l-5-5m5 5l5-5M5 20h14"/></symbol>
+    <symbol id="i-muted" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/></symbol>
+    <symbol id="i-sound" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 11h12a1 1 0 011 1v8a1 1 0 01-1 1H6a1 1 0 01-1-1v-8a1 1 0 011-1zm2 0V7a4 4 0 118 0v4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></symbol>
+  </svg>
+
+  <!-- ============ FLOATING NAV ============ -->
+  <header class="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5 sm:pt-4" x-data="{ open: false }">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 rounded-2xl border border-white/10 bg-ink/70 px-3 py-2 backdrop-blur-xl sm:px-4">
       <a href="#top" class="flex items-center" aria-label="RAG Holdings home">
-        <img src="assets/img/rag-logo.png" alt="RAG Holdings" class="h-8 w-auto">
+        <img src="assets/img/rag-logo.png" alt="RAG Holdings" class="h-11 w-auto sm:h-12">
       </a>
-      <nav class="hidden items-center gap-8 text-xs text-white/80 lg:flex">
-        <a href="#services" class="hover:text-white">What we do</a>
-        <a href="#locations" class="hover:text-white">Where we operate</a>
-        <a href="#how" class="hover:text-white">How it works</a>
-        <a href="#kerala" class="hover:text-white">Kerala</a>
-        <a href="#deck" class="hover:text-white">Corporate deck</a>
+      <nav class="hidden items-center gap-7 text-[13px] font-semibold text-white/80 lg:flex">
+        <a href="#deck" class="transition hover:text-gold-light">Corporate deck</a>
+        <a href="#services" class="transition hover:text-gold-light">What we do</a>
+        <a href="#locations" class="transition hover:text-gold-light">Where we operate</a>
+        <a href="#how" class="transition hover:text-gold-light">How it works</a>
+        <a href="#kerala" class="transition hover:text-gold-light">Kerala</a>
       </nav>
-      <button type="button" @click="talk()"
-              class="btn-gold rounded-full px-4 py-1.5 text-xs text-navy-950 sm:text-sm">
-        Get in touch
-      </button>
+      <div class="flex items-center gap-2">
+        <button type="button" @click="openPopup()" class="btn-gold inline-flex h-10 items-center gap-2 rounded-xl px-4 text-[13px] sm:text-sm">
+          Get in touch <svg class="h-4 w-4"><use href="#i-arrow"/></svg>
+        </button>
+        <button type="button" class="grid h-10 w-10 place-items-center rounded-xl border border-white/15 lg:hidden" @click="open = !open" :aria-expanded="open" aria-label="Menu">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" :d="open ? 'M6 6l12 12M6 18L18 6' : 'M4 7h16M4 12h16M4 17h16'"/></svg>
+        </button>
+      </div>
     </div>
+    <nav x-show="open" x-cloak x-transition.opacity @click="open = false"
+         class="mx-auto mt-2 grid max-w-7xl gap-1 rounded-2xl border border-white/10 bg-ink/95 p-3 text-sm font-semibold backdrop-blur-xl lg:hidden">
+      <a href="#deck" class="rounded-lg px-3 py-3 hover:bg-white/5">Corporate deck</a>
+      <a href="#services" class="rounded-lg px-3 py-3 hover:bg-white/5">What we do</a>
+      <a href="#locations" class="rounded-lg px-3 py-3 hover:bg-white/5">Where we operate</a>
+      <a href="#how" class="rounded-lg px-3 py-3 hover:bg-white/5">How it works</a>
+      <a href="#kerala" class="rounded-lg px-3 py-3 hover:bg-white/5">Kerala</a>
+    </nav>
   </header>
 
   <main id="top">
 
     <!-- ============ 01 HERO ============ -->
-    <!-- The headline, subline and buttons stay fixed. Only the photo deck rotates. -->
-    <section class="relative isolate overflow-x-clip bg-navy-950 text-white">
-      <div class="mx-auto grid max-w-7xl gap-10 px-4 pt-[5.25rem] pb-12 sm:px-6 sm:pt-28 lg:min-h-[100svh] lg:grid-cols-[1.15fr_.85fr] lg:items-center lg:gap-16 lg:px-8 lg:py-32">
+    <!-- Video only. On phones it shows whole (16:9) under the menu bar; from desktop up it fills the screen. -->
+    <section class="relative isolate overflow-hidden bg-ink-deep pt-[76px] sm:pt-[84px] lg:h-[100svh] lg:min-h-[640px] lg:pt-0"
+             x-data="hero">
 
-        <div>
-          <p class="text-[13px] font-semibold text-gold-400 sm:text-[17px]">Co-Presenting Sponsor · Nostalgia 2026</p>
-          <h1 class="hero-title mt-3 sm:mt-4">Start, run and grow your business in the UAE, Qatar, Singapore and India.</h1>
-          <p class="mt-4 max-w-[36rem] text-[16px] leading-[1.47] text-steel sm:mt-6 sm:text-[19px]">
-            RAG Holdings sets up companies, arranges visas, and provides offices. We also handle the government paperwork.
-          </p>
+      <!-- video: a still shows until the player is ready -->
+      <div class="hero-media relative aspect-video w-full overflow-hidden lg:absolute lg:inset-0 lg:aspect-auto">
+        <img src="assets/img/iimk-hall.jpg" alt="" class="absolute inset-0 h-full w-full object-cover" style="object-position: 50% 62%" aria-hidden="true">
+        <iframe x-ref="yt" :src="src" @load="loaded()" title="RAG Holdings video" tabindex="-1"
+                allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"
+                class="hero-video pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 border-0 transition-opacity duration-1000"
+                :class="ready ? 'opacity-100' : 'opacity-0'"></iframe>
+        <!-- light shading behind the nav and the sound button -->
+        <div class="pointer-events-none absolute inset-x-0 top-0 hidden h-28 bg-gradient-to-b from-ink/70 to-transparent lg:block"></div>
+        <div class="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-ink-deep/80 to-transparent lg:h-40"></div>
 
-          <ul class="mt-4 flex flex-wrap gap-2 sm:mt-6" aria-label="RAG at a glance">
-            <li class="rounded-full bg-navy-700/80 px-3 py-1.5 text-[13px] text-white/85 sm:text-sm">Since 2013</li>
-            <li class="rounded-full bg-navy-700/80 px-3 py-1.5 text-[13px] text-white/85 sm:text-sm">9,500+ businesses supported</li>
-            <li class="rounded-full bg-navy-700/80 px-3 py-1.5 text-[13px] text-white/85 sm:text-sm">4 countries</li>
-          </ul>
+        <!-- sound toggle -->
+        <button type="button" @click="toggleSound()" :aria-pressed="!muted" :aria-label="muted ? 'Turn sound on' : 'Turn sound off'"
+                class="absolute bottom-3 right-3 inline-flex h-11 items-center gap-3 rounded-full border border-white/25 bg-ink/60 p-1 text-sm font-bold backdrop-blur transition hover:border-gold hover:text-gold-light sm:bottom-5 sm:right-6 lg:bottom-8 lg:right-8 lg:h-12 lg:pr-5">
+          <span class="icon-gold h-9 w-9 rounded-full lg:h-10 lg:w-10">
+            <svg x-show="muted" class="h-4 w-4"><use href="#i-muted"/></svg>
+            <svg x-show="!muted" x-cloak class="h-4 w-4"><use href="#i-sound"/></svg>
+          </span>
+          <span class="hidden lg:inline" x-text="muted ? 'Sound off' : 'Sound on'">Sound off</span>
+        </button>
+      </div>
 
-          <div class="mt-5 grid grid-cols-2 gap-3 sm:mt-8 sm:flex sm:flex-wrap sm:items-center">
-            <a href="https://wa.me/971586046586?text=Hi%20RAG%2C%20I%20scanned%20your%20QR%20at%20Nostalgia%202026."
-               target="_blank" rel="noopener"
-               class="btn-gold col-span-2 inline-flex min-h-[50px] items-center justify-center gap-2 whitespace-nowrap rounded-full px-6 text-[15px] font-medium text-navy-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold-300 sm:px-8 sm:text-base">
-              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.21 3.08.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35zM12.04 21.5h-.01a9.4 9.4 0 01-4.8-1.31l-.34-.2-3.57.93.95-3.48-.22-.36a9.43 9.43 0 01-1.45-5.03c0-5.2 4.24-9.44 9.45-9.44a9.4 9.4 0 016.68 2.77 9.38 9.38 0 012.76 6.68c0 5.21-4.24 9.44-9.45 9.44zm8.04-17.48A11.3 11.3 0 0012.04.7C5.78.7.68 5.8.68 12.06c0 2 .52 3.96 1.52 5.68L.58 23.3l5.7-1.5a11.3 11.3 0 005.75 1.47h.01c6.26 0 11.36-5.1 11.36-11.36 0-3.03-1.18-5.89-3.32-8.03z"/></svg>
-              Message us on WhatsApp
-            </a>
-            <a href="tel:+971586046586"
-               class="inline-flex min-h-[48px] items-center justify-center rounded-full bg-navy-700/80 px-6 text-[15px] font-medium text-white transition hover:bg-[#424245] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold-300 sm:min-h-[50px] sm:text-base">
-              Call us
-            </a>
-            <a href="#services"
-               class="inline-flex min-h-[48px] items-center justify-center rounded-full px-4 text-[15px] text-gold-400 transition hover:underline hover:underline-offset-4 sm:min-h-[50px] sm:text-base">
-              See what we do
-            </a>
+      <h1 class="sr-only">RAG Holdings: start, run and grow your business in the UAE, Qatar, Singapore and India. Co-Presenting Sponsor of Nostalgia 2026.</h1>
+    </section>
+
+    <!-- ============ CORPORATE DECK (PDF) ============ -->
+    <section id="deck" class="bg-navy-grad relative scroll-mt-20 py-16 sm:py-24" x-data="deckViewer">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between" data-reveal>
+          <div class="max-w-2xl">
+            <p class="eyebrow">Corporate deck 2026</p>
+            <h2 class="h-display mt-4 text-[2rem] sm:text-5xl lg:text-6xl">See the <span class="gold-text">full picture</span></h2>
+            <p class="mt-4 text-base leading-relaxed text-white/70 sm:text-lg">Our story, leadership, offices and services in 32 pages. Flip through it here or download it to read later.</p>
           </div>
-
-          <p class="mt-4 text-[13px] text-white/55 sm:mt-6 sm:text-sm">Dubai · Doha · Singapore · Calicut</p>
+          <div class="flex flex-wrap gap-3">
+            <a :href="pdf" download="RAG-Holdings-Corporate-Deck-2026.pdf" @click="if (!unlocked) { $event.preventDefault(); openGate('download') }"
+               class="btn-gold inline-flex h-[52px] items-center gap-2 rounded-xl px-6">
+              <svg x-show="!unlocked" class="h-5 w-5"><use href="#i-lock"/></svg>
+              <svg x-show="unlocked" x-cloak class="h-5 w-5"><use href="#i-down"/></svg> Download PDF <span class="font-semibold opacity-70">10.6 MB</span>
+            </a>
+            <a :href="pdf" target="_blank" rel="noopener" @click="if (!unlocked) { $event.preventDefault(); openGate('open') }"
+               class="btn-glass inline-flex h-[52px] items-center gap-2 rounded-xl px-6"><svg x-show="!unlocked" class="h-4 w-4"><use href="#i-lock"/></svg> Open full PDF</a>
+          </div>
         </div>
 
-        <!-- photo deck: the front card slides off and the next one moves up -->
-        <div class="flex flex-col items-center"
-             x-data="heroSlider" aria-roledescription="carousel" aria-label="Photos"
-             @pointerenter="hover = $event.pointerType === 'mouse'" @pointerleave="hover = false"
-             @focusin="hover = $event.target.matches(':focus-visible')" @focusout="hover = false"
-             @keydown.left="prev()" @keydown.right="next()">
-          <div class="relative mt-4 aspect-[4/3] w-[78%] max-w-[26rem] sm:w-[60%] lg:mt-0 lg:aspect-[4/5] lg:w-[86%] lg:max-w-[27rem]"
+        <div data-reveal class="relative mx-auto mt-10 max-w-5xl">
+          <div class="deck-locked" :class="unlocked && 'is-unlocked'" :inert="!unlocked">
+          <div class="relative overflow-hidden rounded-[1.25rem] border border-white/10 bg-ink-deep shadow-2xl shadow-black/40"
                @touchstart.passive="touchX = $event.touches[0].clientX"
-               @touchend.passive="swipe($event.changedTouches[0].clientX)">
-            <template x-for="(s, i) in slides" :key="s.img">
-              <figure class="absolute inset-0 overflow-hidden rounded-[28px] bg-navy-900 transition-[transform,opacity,filter] duration-[900ms] ease-[cubic-bezier(.65,0,.35,1)] motion-reduce:transition-none"
-                      :style="card(i)" :aria-hidden="i !== current">
-                <img :src="'assets/img/' + s.img" :alt="s.caption" class="h-full w-full object-cover"
-                     :style="'object-position:' + s.pos"
-                     :class="i === current && 'hero-settle'" :loading="i < 3 ? 'eager' : 'lazy'">
-                <figcaption class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950/90 via-navy-950/40 to-transparent px-4 pb-3 pt-12 text-xs text-white/85 sm:text-sm"
-                            x-text="s.caption"></figcaption>
-              </figure>
-            </template>
+               @touchend.passive="swipe($event.changedTouches[0].clientX)"
+               @keydown.left="prev()" @keydown.right="next()">
+            <img :src="src(i)" :alt="'Corporate deck, page ' + (i + 1) + ' of ' + n" class="aspect-video w-full object-contain" loading="lazy">
+            <button type="button" @click="prev()" :disabled="i === 0" aria-label="Previous page"
+                    class="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-ink/70 backdrop-blur transition hover:border-gold disabled:opacity-0 sm:left-5"><svg class="h-5 w-5"><use href="#i-left"/></svg></button>
+            <button type="button" @click="next()" :disabled="i === n - 1" aria-label="Next page"
+                    class="absolute right-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-ink/70 backdrop-blur transition hover:border-gold disabled:opacity-0 sm:right-5"><svg class="h-5 w-5"><use href="#i-right"/></svg></button>
+            <span class="absolute bottom-3 right-3 rounded-full bg-ink/80 px-3 py-1 text-xs font-bold backdrop-blur sm:bottom-5 sm:right-5">
+              <span class="text-gold-light" x-text="String(i + 1).padStart(2, '0')"></span> / <span x-text="n"></span>
+            </span>
           </div>
 
-          <div class="mt-5 flex items-center gap-4 sm:mt-8">
-            <button type="button" @click="prev()" aria-label="Previous photo"
-                    class="grid h-11 w-11 place-items-center rounded-full bg-navy-700/80 transition hover:bg-[#424245] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-400">
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-            </button>
-            <div class="flex w-24 flex-col items-center gap-2">
-              <p class="text-xs text-white/70"><span class="font-semibold text-white" x-text="current + 1"></span> of <span x-text="slides.length"></span></p>
-              <span class="relative block h-px w-full bg-white/20" aria-hidden="true">
-                <span class="absolute inset-y-0 left-0 bg-gold-400" :style="'width:' + progress * 100 + '%'"></span>
-              </span>
+          <div x-ref="strip" class="mt-4 flex snap-x gap-3 overflow-x-auto pb-3 [scrollbar-width:thin]">
+            <template x-for="k in n" :key="k">
+              <button type="button" @click="go(k - 1)" :aria-label="'Show page ' + k" :aria-current="i === k - 1"
+                      class="w-28 shrink-0 snap-start overflow-hidden rounded-lg ring-2 transition sm:w-36"
+                      :class="i === k - 1 ? 'ring-gold' : 'ring-transparent opacity-50 hover:opacity-100'">
+                <img :src="src(k - 1)" alt="" class="aspect-video w-full object-cover" loading="lazy">
+              </button>
+            </template>
+          </div>
+          </div>
+
+          <!-- lock -->
+          <div x-show="!unlocked" class="absolute inset-0 grid place-items-center p-4">
+            <div class="max-w-sm rounded-2xl border border-white/15 bg-ink/80 p-6 text-center shadow-2xl shadow-black/50 backdrop-blur-md sm:p-8">
+              <span class="icon-gold mx-auto h-14 w-14 rounded-full"><svg class="h-6 w-6"><use href="#i-lock"/></svg></span>
+              <p class="mt-4 text-lg font-extrabold uppercase sm:text-xl">Unlock the full deck</p>
+              <p class="mt-2 text-sm leading-relaxed text-white/70">Share a few details to view all 32 pages and download the PDF.</p>
+              <button type="button" @click="openGate('view')" class="btn-gold mt-5 inline-flex h-12 items-center gap-2 rounded-xl px-6">
+                Unlock the deck <svg class="h-4 w-4"><use href="#i-arrow"/></svg>
+              </button>
             </div>
-            <button type="button" @click="next()" aria-label="Next photo"
-                    class="grid h-11 w-11 place-items-center rounded-full bg-navy-700/80 transition hover:bg-[#424245] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-400">
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-            </button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- rapport note, directly under the hero -->
-    <section class="bg-navy-900 text-polar">
-      <div data-reveal class="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-        <p class="max-w-4xl text-[19px] leading-[1.4] text-steel sm:text-[24px]">
-          <span class="font-semibold text-polar">Thank you, IIM Kozhikode.</span>
-          We are proud to co-present Nostalgia 2026. Whether you are an alumnus, a student or faculty, we would like to meet you.
-          Visit our stall or <button type="button" @click="talk()" class="text-gold-400 hover:underline hover:underline-offset-4">message us here</button>.
-        </p>
+    <!-- ============ THANK YOU + RAG IN THREE LINES ============ -->
+    <section id="about" class="bg-white py-16 text-ink sm:py-24">
+      <div class="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8">
+        <!-- photo mosaic -->
+        <div class="grid grid-cols-5 grid-rows-2 gap-3 sm:gap-4" data-reveal>
+          <img src="assets/img/iimk-hall.jpg" alt="RAG Holdings session at IIM Kozhikode" class="col-span-3 row-span-2 h-full min-h-[260px] w-full rounded-2xl object-cover sm:min-h-[380px]" loading="lazy">
+          <img src="assets/img/calicut-inauguration.jpg" alt="Calicut office opening" class="col-span-2 h-full w-full rounded-2xl object-cover" loading="lazy">
+          <div class="col-span-2 flex flex-col justify-center rounded-2xl bg-ink p-4 text-white sm:p-5">
+            <p class="gold-text text-4xl font-black sm:text-5xl">2013</p>
+            <p class="mt-1 text-xs font-semibold text-white/70 sm:text-sm">Helping founders set up since</p>
+          </div>
+        </div>
+
+        <div>
+          <div data-reveal>
+            <p class="eyebrow">Thank you, IIM Kozhikode</p>
+            <h2 class="h-display mt-4 text-[2rem] sm:text-5xl">We are proud to <span class="gold-text">co-present Nostalgia 2026</span></h2>
+            <p class="mt-5 text-base leading-relaxed text-ink/70 sm:text-lg">Whether you are an alumnus, a student or faculty, we would like to meet you. Visit our stall or <button type="button" @click="talk()" class="font-bold text-gold-dark underline decoration-gold/40 underline-offset-4 hover:decoration-gold">message us here</button>.</p>
+          </div>
+
+          <p class="mt-10 text-xs font-bold uppercase tracking-[.28em] text-ink/50" data-reveal>RAG in three lines</p>
+          <div class="mt-4 grid gap-3 sm:grid-cols-3" data-reveal-group>
+            <div data-reveal class="card-light p-5">
+              <p class="font-extrabold leading-snug">We have done this since 2013.</p>
+              <p class="mt-2 text-sm leading-relaxed text-ink/65">More than 5,000 entrepreneurs have set up in the UAE with us. We support more than 9,500 businesses in all.</p>
+            </div>
+            <div data-reveal class="card-light p-5">
+              <p class="font-extrabold leading-snug">We are where you will want to expand.</p>
+              <p class="mt-2 text-sm leading-relaxed text-ink/65">Our own offices in Dubai, Doha, Singapore and Calicut. Four countries, one team.</p>
+            </div>
+            <div data-reveal class="card-light p-5">
+              <p class="font-extrabold leading-snug">One team, start to finish.</p>
+              <p class="mt-2 text-sm leading-relaxed text-ink/65">The team that forms your company can also arrange your visas, your office and your accounts.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- numbers -->
+      <!-- TO CONFIRM: 350,000 sq ft covers the three UAE centres. The deck also says 300,000 sq ft in Dubai. -->
+      <div class="mx-auto mt-14 max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div data-reveal class="grid grid-cols-2 overflow-hidden rounded-3xl bg-ink lg:grid-cols-4"
+             x-data="{ shown: false }" x-intersect.once="shown = true">
+          <template x-for="(s, i) in [
+              { n: 2013, suffix: '', label: 'Since', count: false },
+              { n: 9500, suffix: '+', label: 'Businesses supported', count: true },
+              { n: 4, suffix: '', label: 'Countries', count: true },
+              { n: 350000, suffix: '+', label: 'sq ft of office space in the UAE', count: true }
+            ]" :key="i">
+            <div class="border-white/10 px-4 py-8 text-center sm:py-10"
+                 :class="[i % 2 === 0 && 'border-r', i < 2 && 'border-b lg:border-b-0', i === 1 && 'lg:border-r', i === 2 && 'lg:border-r']"
+                 x-data="{ v: s.count ? 0 : s.n }"
+                 x-effect="if (shown && s.count) { let t0 = performance.now(); const step = (t) => { const p = Math.min((t - t0) / 1400, 1); v = Math.round(s.n * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step) }; requestAnimationFrame(step) }">
+              <p class="gold-text text-[8.5vw] font-black tabular-nums leading-none sm:text-5xl lg:text-[3.5rem]" x-text="(s.count ? v.toLocaleString('en-US') : v) + s.suffix"></p>
+              <p class="mt-3 text-xs font-semibold uppercase tracking-[.16em] text-white/65 sm:text-[13px]" x-text="s.label"></p>
+            </div>
+          </template>
+        </div>
+        <div data-reveal class="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-5">
+          <img src="assets/img/iso-badges.png" alt="ISO 27001:2013 and ISO 9001:2015 certified" class="h-16 w-auto rounded-full bg-ink p-1" loading="lazy">
+          <p class="text-center text-sm font-semibold text-ink/65 sm:text-left">3 centres in Dubai. ISO 27001:2013 and ISO 9001:2015 certified.</p>
+        </div>
       </div>
     </section>
 
     <!-- ============ 02 WHAT DO YOU NEED? ============ -->
-    <section id="services" class="scroll-mt-14 bg-navy-950 py-16 text-polar sm:py-28">
+    <section id="services" class="bg-navy-grad scroll-mt-20 py-16 sm:py-24">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div data-reveal class="max-w-3xl">
-          <h2 class="display text-[32px] sm:text-5xl lg:text-[56px]">Tell us what you are planning</h2>
-          <p class="mt-4 text-[17px] text-steel sm:text-[19px]">Pick one. We will take it from there.</p>
+        <div class="grid gap-6 lg:grid-cols-2 lg:items-end" data-reveal>
+          <div>
+            <p class="eyebrow">What do you need?</p>
+            <h2 class="h-display mt-4 text-[2rem] sm:text-5xl lg:text-6xl">Tell us what <span class="gold-text">you are planning</span></h2>
+          </div>
+          <p class="text-base leading-relaxed text-white/70 sm:text-lg lg:pb-2">Pick one. We will take it from there. Each choice opens WhatsApp with your topic already written in.</p>
         </div>
 
-        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5" data-reveal-group>
-          <template x-for="c in [
+        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-6 lg:gap-5" data-reveal-group>
+          <template x-for="(c, idx) in [
               { t: 'Start a company', d: 'Mainland, free zone or offshore in the UAE. Company formation in Qatar. Incorporation in Singapore, done remotely.', b: 'Start a company', w: 'starting a company',
                 icon: 'M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.63 8.41m5.96 5.96a14.93 14.93 0 01-5.84 2.58m0 0a6 6 0 00-7.38 5.84h4.8m2.58-5.84a14.93 14.93 0 01-2.58-5.84m2.58 5.84L9.63 8.41' },
               { t: 'Get an office in Dubai', d: 'Private offices, Remote Office, Co-working, Closed Flexi and meeting rooms across three Dubai centres.', b: 'Ask about offices', w: 'getting an office in Dubai',
@@ -307,16 +422,18 @@
                 icon: 'M17.66 16.66L13.41 20.9a2 2 0 01-2.83 0l-4.24-4.24a8 8 0 1111.32 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z' }
             ]" :key="c.t">
             <a :href="'https://wa.me/971586046586?text=' + encodeURIComponent('Hi RAG, I scanned your QR at Nostalgia 2026. I would like to talk about ' + c.w + '.')"
-               target="_blank" rel="noopener"
-               data-reveal class="card-lux group flex flex-col rounded-[28px] bg-navy-900 p-6 transition duration-500 hover:-translate-y-1 hover:bg-navy-800 sm:p-8">
-              <span class="grid h-12 w-12 place-items-center rounded-full bg-navy-700 text-gold-400 transition duration-500 group-hover:bg-gold-500 group-hover:text-navy-950">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" :d="c.icon"/></svg>
+               target="_blank" rel="noopener" data-reveal
+               class="card-dark group flex flex-col p-6 hover:-translate-y-1 sm:p-7"
+               :class="idx < 2 ? 'lg:col-span-3' : 'lg:col-span-2'">
+              <span class="icon-gold h-12 w-12">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" :d="c.icon"/></svg>
               </span>
-              <h3 class="mt-6 text-[21px] font-semibold tracking-[-0.01em]" x-text="c.t"></h3>
-              <p class="mt-2 flex-1 text-[15px] leading-[1.47] text-steel" x-text="c.d"></p>
-              <span class="mt-6 inline-flex min-h-[44px] w-fit items-center gap-2 rounded-full bg-gold-500 px-5 text-sm font-medium text-navy-950 transition group-hover:bg-gold-400">
+              <h3 class="mt-6 text-xl font-extrabold uppercase tracking-tight sm:text-[1.35rem]" x-text="c.t"></h3>
+              <p class="mt-2 flex-1 text-sm leading-relaxed text-white/65 sm:text-[15px]" x-text="c.d"></p>
+              <span class="mt-6 inline-flex items-center gap-2 text-sm font-bold text-gold-light">
+                <svg class="h-4 w-4"><use href="#i-wa"/></svg>
                 <span x-text="c.b"></span>
-                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 004.74 1.21c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2z"/></svg>
+                <svg class="h-4 w-4 transition group-hover:translate-x-1"><use href="#i-arrow"/></svg>
               </span>
             </a>
           </template>
@@ -325,174 +442,177 @@
       </div>
     </section>
 
-    <!-- ============ 03 RAG IN THREE LINES ============ -->
-    <section id="about" class="bg-navy-900 py-16 text-polar sm:py-28">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 data-reveal class="display text-[32px] sm:text-5xl lg:text-[56px]">RAG in three lines</h2>
-
-        <ol class="mt-10 grid gap-4 lg:grid-cols-3 lg:gap-5" data-reveal-group>
-          <li data-reveal class="rounded-[28px] bg-navy-950 p-6 sm:p-8">
-            <p class="text-[21px] font-semibold leading-tight tracking-[-0.01em] sm:text-[24px]">We have done this since 2013.</p>
-            <p class="mt-3 text-[15px] leading-[1.47] text-steel sm:text-[17px]">More than 5,000 entrepreneurs have set up in the UAE with us. We support more than 9,500 businesses in all.</p>
-          </li>
-          <li data-reveal class="rounded-[28px] bg-navy-950 p-6 sm:p-8">
-            <p class="text-[21px] font-semibold leading-tight tracking-[-0.01em] sm:text-[24px]">We are where you will want to expand.</p>
-            <p class="mt-3 text-[15px] leading-[1.47] text-steel sm:text-[17px]">Our own offices in Dubai, Doha, Singapore and Calicut. Four countries, one team.</p>
-          </li>
-          <li data-reveal class="rounded-[28px] bg-navy-950 p-6 sm:p-8">
-            <p class="text-[21px] font-semibold leading-tight tracking-[-0.01em] sm:text-[24px]">One team, start to finish.</p>
-            <p class="mt-3 text-[15px] leading-[1.47] text-steel sm:text-[17px]">The team that forms your company can also arrange your visas, your office and your accounts.</p>
-          </li>
-        </ol>
-
-        <!-- TO CONFIRM: 350,000 sq ft covers the three UAE centres. The deck also says 300,000 sq ft in Dubai. -->
-        <div data-reveal class="mt-4 grid grid-cols-2 gap-4 lg:mt-5 lg:grid-cols-4 lg:gap-5"
-             x-data="{ shown: false }" x-intersect.once="shown = true">
-          <template x-for="(s, i) in [
-              { n: 2013, suffix: '', label: 'Since', count: false },
-              { n: 9500, suffix: '+', label: 'Businesses supported', count: true },
-              { n: 4, suffix: '', label: 'Countries', count: true },
-              { n: 350000, suffix: '+', label: 'sq ft of office space in the UAE', count: true }
-            ]" :key="i">
-            <div class="rounded-[28px] bg-navy-950 px-4 py-8 text-center sm:py-12"
-                 x-data="{ v: s.count ? 0 : s.n }"
-                 x-effect="if (shown && s.count) { let t0 = performance.now(); const step = (t) => { const p = Math.min((t - t0) / 1400, 1); v = Math.round(s.n * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step) }; requestAnimationFrame(step) }">
-              <div class="text-gold-grad text-[8vw] font-semibold tracking-[-0.01em] tabular-nums sm:text-5xl lg:text-[56px]"
-                   x-text="(s.count ? v.toLocaleString('en-US') : v) + s.suffix"></div>
-              <div class="mt-2 text-sm text-steel sm:text-base" x-text="s.label"></div>
-            </div>
-          </template>
-        </div>
-
-        <div data-reveal class="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-6">
-          <img src="assets/img/iso-badges.png" alt="ISO 27001:2013 and ISO 9001:2015 certified" class="h-20 w-auto" loading="lazy">
-          <p class="text-center text-[15px] text-steel sm:text-left">3 centres in Dubai. ISO 27001:2013 and ISO 9001:2015 certified.</p>
-        </div>
+    <!-- ============ MARQUEE ============ -->
+    <section class="overflow-hidden bg-ink-deep py-8 sm:py-12" aria-label="Dubai, Doha, Singapore, Calicut. Since 2013. One team.">
+      <div class="flex w-max marquee" aria-hidden="true">
+        <template x-for="k in 2" :key="k">
+          <p class="flex shrink-0 items-center gap-8 pr-8 text-5xl font-black uppercase tracking-tight sm:text-7xl">
+            <span class="text-outline">Dubai</span><span class="text-gold">·</span><span class="gold-text">Doha</span><span class="text-gold">·</span>
+            <span class="text-outline">Singapore</span><span class="text-gold">·</span><span class="gold-text">Calicut</span><span class="text-gold">·</span>
+          </p>
+        </template>
       </div>
-    </section>
-
-    <!-- ============ 04 WHERE SHOULD YOUR BUSINESS START? ============ -->
-    <section id="locations" class="scroll-mt-14 bg-navy-950 py-16 text-polar sm:py-28">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 data-reveal class="display text-[32px] sm:text-5xl lg:text-[56px]">Four places. One team.</h2>
-
-        <div class="mt-10 grid gap-4 md:grid-cols-2 lg:gap-5" data-reveal-group>
-          <template x-for="p in [
-              { name: 'RAG UAE', where: 'Dubai headquarters', fit: 'Suits you if you want a Dubai licence, visas for your team and an office address.',
-                items: ['Company formation: mainland, free zone and offshore', 'PRO services, licence renewals and visas', 'Golden Visa support', 'Offices, co-working and meeting rooms', 'Idea HQ startup incubator, certified under the Hamdan Innovation Incubator'],
-                places: [
-                  { n: 'Biz HQ', a: 'Addiyar Building, Sheikh Zayed Road, Al Wasl. Open 24 hours.', q: 'RAG+Biz+HQ+Addiyar+Building+Sheikh+Zayed+Road+Dubai' },
-                  { n: 'Tower', a: 'Al Barsha Road, near Mall of the Emirates.', q: 'RAG+Tower+Al+Barsha+Dubai' },
-                  { n: 'Global Business Hub', a: 'Al Qusais.', q: 'RAG+Global+Business+Hub+Al+Qusais+Dubai' } ] },
-              { name: 'RAG Qatar', where: 'West Bay, Doha', fit: 'Suits you if you want to do business in Qatar, with a local team in Doha.',
-                items: ['Company formation: mainland, QFZ and QFC', 'PRO and government services, including Hukoomi', 'Local sponsorship, document attestation and translation', 'Trademark registration, business consulting and market research', 'Ranked among Qatar\'s top 5 consulting firms by the Ministry of Commerce and Industry'],
-                places: [ { n: 'Doha office', a: 'Office 3203, Floor 32, Palm Tower B, West Bay, Doha.', q: 'Palm+Tower+B+West+Bay+Doha' } ] },
-              { name: 'RAG Singapore', where: 'Southeast Asia', fit: 'Suits you if you want a base in Asia without travelling there first.',
-                items: ['Company incorporation: Pte Ltd, branch or representative office', 'Nominee director and company secretary', 'Registered address and bank account support', 'Licensing and permits', 'Set up remotely. Usually 1 to 3 business days once your documents are in order'],
-                places: [ { n: 'Singapore office', a: '60 Paya Lebar Road #07-54, Paya Lebar Square, Singapore 409051.', q: '60+Paya+Lebar+Road+Singapore+409051' } ] },
-              { name: 'RAG India', where: 'Calicut, Kerala', fit: 'Suits you if you are building a team in Kerala or entering India.',
-                items: ['Office opened on 31 August 2026', 'Teams in marketing, sales, administration, digital operations, customer support and business services', 'Works every day with our UAE, Qatar and Singapore teams on live client projects', 'Support for Gulf-based and multinational companies entering India'],
-                places: [ { n: 'Calicut office', a: 'HiLITE Business Park, Calicut, Kerala.', q: 'HiLITE+Business+Park+Calicut' } ] }
-            ]" :key="p.name">
-            <article data-reveal class="flex flex-col rounded-[28px] bg-navy-900 p-6 sm:p-8">
-              <p class="text-sm text-steel" x-text="p.where"></p>
-              <h3 class="mt-1 text-[28px] font-semibold tracking-[-0.01em]" x-text="p.name"></h3>
-              <p class="mt-3 text-[17px] leading-[1.4] text-polar" x-text="p.fit"></p>
-              <ul class="mt-5 flex-1 space-y-2 text-[15px] leading-[1.47] text-steel">
-                <template x-for="it in p.items" :key="it">
-                  <li class="flex gap-3"><span class="mt-[.55rem] h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500"></span><span x-text="it"></span></li>
-                </template>
-              </ul>
-              <div class="mt-6 space-y-2 border-t border-white/10 pt-5">
-                <template x-for="pl in p.places" :key="pl.n">
-                  <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                    <p class="text-sm text-white/80"><span class="font-semibold text-white" x-text="pl.n + ': '"></span><span x-text="pl.a"></span></p>
-                    <a :href="'https://www.google.com/maps/search/?api=1&query=' + pl.q" target="_blank" rel="noopener"
-                       class="inline-flex min-h-[44px] shrink-0 items-center text-sm text-gold-400 hover:underline hover:underline-offset-4">Get directions</a>
-                  </div>
-                </template>
-              </div>
-            </article>
-          </template>
-        </div>
-        <!-- TO CONFIRM with Deeraj: the Qatar top 5 wording and permission to use it, Calicut India-entry support, and what Biz HQ "open 24 hours" covers. -->
-
-        <div data-reveal class="mt-10">
-          <button type="button" @click="talk('Start a company in the UAE, Qatar or Singapore')"
-                  class="btn-gold inline-flex min-h-[52px] items-center rounded-full px-7 font-medium text-navy-950">
-            Start your company with us
-          </button>
-        </div>
+      <div class="mt-2 flex w-max marquee reverse sm:mt-4" aria-hidden="true">
+        <template x-for="k in 2" :key="k">
+          <p class="flex shrink-0 items-center gap-8 pr-8 text-5xl font-black uppercase tracking-tight sm:text-7xl">
+            <span class="gold-text">Since 2013</span><span class="text-gold">·</span><span class="text-outline">One team</span><span class="text-gold">·</span>
+            <span class="gold-text">Four countries</span><span class="text-gold">·</span><span class="text-outline">9,500+ businesses</span><span class="text-gold">·</span>
+          </p>
+        </template>
       </div>
     </section>
 
     <!-- ============ 05 HOW IT WORKS ============ -->
-    <section id="how" class="scroll-mt-14 bg-navy-900 py-16 text-polar sm:py-28">
+    <section id="how" class="scroll-mt-20 bg-white py-16 text-ink sm:py-24">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 data-reveal class="display text-[32px] sm:text-5xl lg:text-[56px]">Three steps, no guesswork</h2>
-        <ol class="mt-10 grid gap-4 lg:grid-cols-3 lg:gap-5" data-reveal-group>
-          <li data-reveal class="rounded-[28px] bg-navy-950 p-6 sm:p-8">
-            <span class="text-[48px] font-semibold leading-none text-gold-400">1</span>
-            <p class="mt-5 text-[21px] font-semibold tracking-[-0.01em]">Tell us your plan.</p>
-            <p class="mt-2 text-[15px] leading-[1.47] text-steel sm:text-[17px]">Message us on WhatsApp, fill the short form, or speak to us at the stall.</p>
+        <div class="text-center" data-reveal>
+          <p class="eyebrow center">How it works</p>
+          <h2 class="h-display mt-4 text-[2rem] sm:text-5xl lg:text-6xl">Three steps, <span class="gold-text">no guesswork</span></h2>
+        </div>
+        <ol class="mt-12 grid gap-4 md:grid-cols-3 lg:gap-6" data-reveal-group>
+          <li data-reveal class="card-light p-6 sm:p-8">
+            <div class="flex items-center justify-between">
+              <span class="icon-gold h-12 w-12"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h8M8 14h5m-9 6l3-3h10a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v14z"/></svg></span>
+              <span class="text-5xl font-black text-ink/10">01</span>
+            </div>
+            <p class="mt-6 text-lg font-extrabold">Tell us your plan.</p>
+            <p class="mt-2 text-[15px] leading-relaxed text-ink/65">Message us on WhatsApp, fill the short form, or speak to us at the stall.</p>
           </li>
-          <li data-reveal class="rounded-[28px] bg-navy-950 p-6 sm:p-8">
-            <span class="text-[48px] font-semibold leading-none text-gold-400">2</span>
-            <p class="mt-5 text-[21px] font-semibold tracking-[-0.01em]">We prepare and file.</p>
-            <p class="mt-2 text-[15px] leading-[1.47] text-steel sm:text-[17px]">We recommend the right structure. Then we prepare the documents and deal with the authorities.</p>
+          <li data-reveal class="card-light p-6 sm:p-8">
+            <div class="flex items-center justify-between">
+              <span class="icon-gold h-12 w-12"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.59a1 1 0 01.7.29l5.42 5.42a1 1 0 01.29.7V19a2 2 0 01-2 2z"/></svg></span>
+              <span class="text-5xl font-black text-ink/10">02</span>
+            </div>
+            <p class="mt-6 text-lg font-extrabold">We prepare and file.</p>
+            <p class="mt-2 text-[15px] leading-relaxed text-ink/65">We recommend the right structure. Then we prepare the documents and deal with the authorities.</p>
           </li>
-          <li data-reveal class="rounded-[28px] bg-navy-950 p-6 sm:p-8">
-            <span class="text-[48px] font-semibold leading-none text-gold-400">3</span>
-            <p class="mt-5 text-[21px] font-semibold tracking-[-0.01em]">You start. We stay on.</p>
-            <p class="mt-2 text-[15px] leading-[1.47] text-steel sm:text-[17px]">Visas, office space, accounts and renewals can all stay with the same team.</p>
+          <li data-reveal class="card-light p-6 sm:p-8">
+            <div class="flex items-center justify-between">
+              <span class="icon-gold h-12 w-12"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span>
+              <span class="text-5xl font-black text-ink/10">03</span>
+            </div>
+            <p class="mt-6 text-lg font-extrabold">You start. We stay on.</p>
+            <p class="mt-2 text-[15px] leading-relaxed text-ink/65">Visas, office space, accounts and renewals can all stay with the same team.</p>
           </li>
         </ol>
       </div>
     </section>
 
-    <!-- ============ 06 NOW IN KERALA ============ -->
-    <section id="kerala" class="scroll-mt-14 bg-navy-950 py-16 text-polar sm:py-28">
+    <!-- ============ 04 WHERE SHOULD YOUR BUSINESS START? ============ -->
+    <section id="locations" class="scroll-mt-20 bg-navy py-16 sm:py-24"
+             x-data="{
+               tab: 0,
+               places: [
+                 { name: 'RAG UAE', short: 'UAE', where: 'Dubai headquarters', fit: 'Suits you if you want a Dubai licence, visas for your team and an office address.',
+                   items: ['Company formation: mainland, free zone and offshore', 'PRO services, licence renewals and visas', 'Golden Visa support', 'Offices, co-working and meeting rooms', 'Idea HQ startup incubator, certified under the Hamdan Innovation Incubator'],
+                   map: 'RAG Biz HQ Addiyar Building Sheikh Zayed Road Dubai',
+                   offices: [
+                     { n: 'Biz HQ', a: 'Addiyar Building, Sheikh Zayed Road, Al Wasl. Open 24 hours.', q: 'RAG+Biz+HQ+Addiyar+Building+Sheikh+Zayed+Road+Dubai' },
+                     { n: 'Tower', a: 'Al Barsha Road, near Mall of the Emirates.', q: 'RAG+Tower+Al+Barsha+Dubai' },
+                     { n: 'Global Business Hub', a: 'Al Qusais.', q: 'RAG+Global+Business+Hub+Al+Qusais+Dubai' } ] },
+                 { name: 'RAG Qatar', short: 'Qatar', where: 'West Bay, Doha', fit: 'Suits you if you want to do business in Qatar, with a local team in Doha.',
+                   items: ['Company formation: mainland, QFZ and QFC', 'PRO and government services, including Hukoomi', 'Local sponsorship, document attestation and translation', 'Trademark registration, business consulting and market research', 'Ranked among Qatar\'s top 5 consulting firms by the Ministry of Commerce and Industry'],
+                   map: 'Palm Tower B West Bay Doha',
+                   offices: [ { n: 'Doha office', a: 'Office 3203, Floor 32, Palm Tower B, West Bay, Doha.', q: 'Palm+Tower+B+West+Bay+Doha' } ] },
+                 { name: 'RAG Singapore', short: 'Singapore', where: 'Southeast Asia', fit: 'Suits you if you want a base in Asia without travelling there first.',
+                   items: ['Company incorporation: Pte Ltd, branch or representative office', 'Nominee director and company secretary', 'Registered address and bank account support', 'Licensing and permits', 'Set up remotely. Usually 1 to 3 business days once your documents are in order'],
+                   map: '60 Paya Lebar Road Singapore 409051',
+                   offices: [ { n: 'Singapore office', a: '60 Paya Lebar Road #07-54, Paya Lebar Square, Singapore 409051.', q: '60+Paya+Lebar+Road+Singapore+409051' } ] },
+                 { name: 'RAG India', short: 'India', where: 'Calicut, Kerala', fit: 'Suits you if you are building a team in Kerala or entering India.',
+                   items: ['Office opened on 31 August 2026', 'Teams in marketing, sales, administration, digital operations, customer support and business services', 'Works every day with our UAE, Qatar and Singapore teams on live client projects', 'Support for Gulf-based and multinational companies entering India'],
+                   map: 'HiLITE Business Park Calicut Kerala',
+                   offices: [ { n: 'Calicut office', a: 'HiLITE Business Park, Calicut, Kerala.', q: 'HiLITE+Business+Park+Calicut' } ] }
+               ]
+             }">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="grid gap-8 lg:grid-cols-2 lg:items-end lg:gap-14">
-          <div data-reveal>
-            <p class="kicker text-gold-400">Now in Kerala</p>
-            <h2 class="mt-3 display text-[32px] sm:text-5xl lg:text-[56px]">Our Calicut office is open</h2>
-            <p class="mt-4 text-[17px] leading-[1.47] text-steel sm:text-[19px]">It opened on 31 August 2026 at HiLITE Business Park. Shri P. K. Basheer, Minister for Public Works, inaugurated it.</p>
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between" data-reveal>
+          <div>
+            <p class="eyebrow">Where should your business start?</p>
+            <h2 class="h-display mt-4 text-[2rem] sm:text-5xl lg:text-6xl">Four places. <span class="gold-text">One team.</span></h2>
           </div>
-          <blockquote data-reveal>
-            <p class="display text-[28px] sm:text-[36px]">“We want careers to become more global.”</p>
-            <footer class="mt-3 text-sm text-steel">Rassal Ahmed, CEO</footer>
-          </blockquote>
+          <div class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0" role="tablist" aria-label="Countries">
+            <template x-for="(p, k) in places" :key="p.short">
+              <button type="button" role="tab" @click="tab = k" :aria-selected="tab === k"
+                      class="h-11 shrink-0 rounded-full px-5 text-sm font-bold transition"
+                      :class="tab === k ? 'btn-gold' : 'border border-white/15 text-white/80 hover:border-gold/60'" x-text="p.short"></button>
+            </template>
+          </div>
         </div>
 
-        <div class="mt-10 grid gap-4 md:grid-cols-2 lg:gap-5" data-reveal-group>
-          <figure data-reveal class="group overflow-hidden rounded-[28px] bg-navy-900">
-            <img src="assets/img/calicut-inauguration.jpg" alt="Ribbon cutting at the RAG Holdings Calicut office" class="aspect-[4/3] w-full object-cover transition duration-[1.2s] group-hover:scale-[1.04]" loading="lazy">
-            <figcaption class="p-6 sm:p-8">
-              <p class="text-sm font-semibold text-gold-400">What happens in Calicut</p>
-              <p class="mt-2 text-[15px] leading-[1.47] text-steel sm:text-[17px]">Our Calicut teams work alongside colleagues in Dubai, Doha and Singapore on live client projects. You can build an international career without leaving Kerala.</p>
-            </figcaption>
-          </figure>
-          <!-- TO CONFIRM: the caption month must match when this photo was taken. -->
-          <figure data-reveal class="group overflow-hidden rounded-[28px] bg-navy-900">
-            <img src="assets/img/chief-minister.jpg" alt="RAG Holdings leaders meeting the Chief Minister of Kerala" class="aspect-[4/3] w-full object-cover transition duration-[1.2s] group-hover:scale-[1.04]" loading="lazy">
-            <figcaption class="p-6 sm:p-8">
-              <p class="text-sm font-semibold text-gold-400">With the Chief Minister</p>
-              <p class="mt-2 text-[15px] leading-[1.47] text-steel sm:text-[17px]">We met Shri V. D. Satheesan, Chief Minister of Kerala. We shared our plan for Global Capability Centres and startup hubs in Kerala.</p>
-            </figcaption>
-          </figure>
+        <div class="mt-10 grid gap-4 lg:grid-cols-5 lg:gap-5" data-reveal>
+          <div class="overflow-hidden rounded-[1.25rem] border border-white/10 bg-ink-2 lg:col-span-3">
+            <iframe :src="'https://maps.google.com/maps?q=' + encodeURIComponent(places[tab].map) + '&z=15&output=embed'"
+                    :title="'Map of ' + places[tab].name" class="h-[280px] w-full sm:h-[360px] lg:h-full lg:min-h-[480px]" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
+          <div class="card-dark flex flex-col p-6 sm:p-8 lg:col-span-2">
+            <span class="icon-gold h-12 w-12"><svg class="h-6 w-6"><use href="#i-pin"/></svg></span>
+            <p class="mt-5 text-xs font-bold uppercase tracking-[.22em] text-gold" x-text="places[tab].where"></p>
+            <h3 class="mt-1 text-2xl font-extrabold uppercase sm:text-3xl" x-text="places[tab].name"></h3>
+            <p class="mt-3 font-semibold text-white/90" x-text="places[tab].fit"></p>
+            <ul class="mt-5 space-y-2.5 text-sm leading-relaxed text-white/70">
+              <template x-for="it in places[tab].items" :key="it">
+                <li class="flex gap-3"><svg class="mt-0.5 h-4 w-4 shrink-0 text-gold"><use href="#i-check"/></svg><span x-text="it"></span></li>
+              </template>
+            </ul>
+            <div class="mt-6 space-y-3 border-t border-white/10 pt-5">
+              <template x-for="o in places[tab].offices" :key="o.n">
+                <div class="flex items-start justify-between gap-4">
+                  <p class="text-sm text-white/75"><span class="font-bold text-white" x-text="o.n + ': '"></span><span x-text="o.a"></span></p>
+                  <a :href="'https://www.google.com/maps/search/?api=1&query=' + o.q" target="_blank" rel="noopener"
+                     class="inline-flex min-h-[44px] shrink-0 items-center text-sm font-bold text-gold-light hover:text-white">Get directions</a>
+                </div>
+              </template>
+            </div>
+            <button type="button" @click="talk('Start a company in the UAE, Qatar or Singapore')" class="btn-gold mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-xl px-6">
+              Start your company with us <svg class="h-4 w-4"><use href="#i-arrow"/></svg>
+            </button>
+          </div>
+        </div>
+        <!-- TO CONFIRM with Deeraj: the Qatar top 5 wording and permission to use it, Calicut India-entry support, and what Biz HQ "open 24 hours" covers. -->
+      </div>
+    </section>
+
+    <!-- ============ 06 NOW IN KERALA ============ -->
+    <section id="kerala" class="scroll-mt-20 bg-white py-16 text-ink sm:py-24">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="grid gap-10 lg:grid-cols-2 lg:gap-16">
+          <div data-reveal>
+            <p class="eyebrow">Now in Kerala</p>
+            <h2 class="h-display mt-4 text-[2rem] sm:text-5xl lg:text-6xl">Our Calicut office <span class="gold-text">is open</span></h2>
+            <p class="mt-5 text-base leading-relaxed text-ink/70 sm:text-lg">It opened on 31 August 2026 at HiLITE Business Park. Shri P. K. Basheer, Minister for Public Works, inaugurated it.</p>
+            <figure class="mt-8 rounded-2xl bg-ink p-6 text-white sm:p-8">
+              <svg class="h-8 w-8 text-gold" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.5 6C6.5 7.2 4.5 9.9 4.5 13.2V18h5.5v-5.5H7.3c.2-2 1.4-3.6 3.2-4.4L9.5 6zm9 0c-3 1.2-5 3.9-5 7.2V18H19v-5.5h-2.7c.2-2 1.4-3.6 3.2-4.4L18.5 6z"/></svg>
+              <blockquote class="mt-3 text-2xl font-extrabold leading-snug sm:text-3xl">We want careers to become more global.</blockquote>
+              <figcaption class="mt-3 text-sm font-semibold text-gold-light">Rassal Ahmed, CEO</figcaption>
+            </figure>
+          </div>
+          <div class="grid gap-4" data-reveal-group>
+            <div data-reveal class="card-light overflow-hidden">
+              <img src="assets/img/calicut-inauguration.jpg" alt="Ribbon cutting at the RAG Holdings Calicut office" class="aspect-[16/9] w-full object-cover" loading="lazy">
+              <div class="p-5 sm:p-6">
+                <p class="text-xs font-bold uppercase tracking-[.2em] text-gold-dark">What happens in Calicut</p>
+                <p class="mt-2 text-[15px] leading-relaxed text-ink/70">Our Calicut teams work alongside colleagues in Dubai, Doha and Singapore on live client projects. You can build an international career without leaving Kerala.</p>
+              </div>
+            </div>
+            <!-- TO CONFIRM: the caption month must match when this photo was taken. -->
+            <div data-reveal class="card-light grid overflow-hidden sm:grid-cols-5">
+              <img src="assets/img/chief-minister.jpg" alt="RAG Holdings leaders meeting the Chief Minister of Kerala" class="aspect-[16/9] h-full w-full object-cover sm:col-span-2 sm:aspect-auto" loading="lazy">
+              <div class="p-5 sm:col-span-3 sm:p-6">
+                <p class="text-xs font-bold uppercase tracking-[.2em] text-gold-dark">With the Chief Minister</p>
+                <p class="mt-2 text-[15px] leading-relaxed text-ink/70">We met Shri V. D. Satheesan, Chief Minister of Kerala. We shared our plan for Global Capability Centres and startup hubs in Kerala.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div data-reveal class="mt-4 grid overflow-hidden rounded-[28px] bg-navy-900 lg:mt-5 lg:grid-cols-2">
+        <div data-reveal class="mt-6 grid overflow-hidden rounded-3xl bg-ink text-white lg:grid-cols-2">
           <img src="assets/img/iimk-hall.jpg" alt="RAG Holdings session at IIM Kozhikode" class="aspect-[16/10] h-full w-full object-cover" loading="lazy">
           <div class="flex flex-col justify-center p-6 sm:p-10">
-            <p class="text-sm font-semibold text-gold-400">Spoken at IIM Kozhikode, 29 August 2026</p>
-            <p class="mt-3 text-[17px] leading-[1.47] text-steel sm:text-[19px]">Rassal Ahmed, Mohammed Aslam and Deeraj Rao spoke to IIMK students about the Gulf market and global leadership. They also covered market expansion and business culture.</p>
-            <div class="mt-6 flex flex-wrap items-center gap-3">
-              <button type="button" @click="talk('Careers at Calicut')"
-                      class="btn-gold inline-flex min-h-[48px] items-center rounded-full px-6 font-medium text-navy-950">Careers at Calicut</button>
-              <a href="https://www.ragroup.ae/rag-holdings-at-iim-kozhikode" target="_blank" rel="noopener"
-                 class="inline-flex min-h-[48px] items-center px-2 text-gold-400 hover:underline hover:underline-offset-4">Read about our IIMK session</a>
+            <p class="eyebrow">Spoken at IIM Kozhikode, 29 August 2026</p>
+            <p class="mt-4 text-base leading-relaxed text-white/80 sm:text-lg">Rassal Ahmed, Mohammed Aslam and Deeraj Rao spoke to IIMK students about the Gulf market and global leadership. They also covered market expansion and business culture.</p>
+            <div class="mt-6 flex flex-wrap gap-3">
+              <button type="button" @click="talk('Careers at Calicut')" class="btn-gold inline-flex h-12 items-center gap-2 rounded-xl px-6">Careers at Calicut <svg class="h-4 w-4"><use href="#i-arrow"/></svg></button>
+              <a href="https://www.ragroup.ae/rag-holdings-at-iim-kozhikode" target="_blank" rel="noopener" class="btn-glass inline-flex h-12 items-center rounded-xl px-6">Read about our IIMK session</a>
             </div>
           </div>
         </div>
@@ -500,165 +620,127 @@
     </section>
 
     <!-- ============ 07 PROOF ============ -->
-    <section id="recognition" class="bg-white py-16 text-navy-800 sm:py-28">
+    <section id="recognition" class="bg-mist py-16 text-ink sm:py-24">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 data-reveal class="display text-[32px] sm:text-5xl lg:text-[56px]">Recognised for how we work</h2>
+        <div class="text-center" data-reveal>
+          <p class="eyebrow center">Proof</p>
+          <h2 class="h-display mt-4 text-[2rem] sm:text-5xl lg:text-6xl">Recognised for <span class="gold-text">how we work</span></h2>
+        </div>
 
-        <div class="mt-10 grid items-center gap-8 lg:grid-cols-5 lg:gap-12">
+        <div class="mt-12 grid items-center gap-8 lg:grid-cols-5 lg:gap-12">
           <img src="assets/img/gptw.png" alt="Great Place To Work Certified and Best Workplaces in the Middle East 2026 badges" data-reveal class="mx-auto w-full max-w-md lg:col-span-2" loading="lazy">
-          <ul class="space-y-3 lg:col-span-3" data-reveal-group>
-            <li data-reveal class="card-lux rounded-[28px] bg-polar p-5 sm:p-6">
-              <p class="font-semibold">Great Place To Work® Certified</p>
-              <p class="mt-1 text-sm text-[#6e6e73]">UAE, June 2026 to June 2027.</p>
-            </li>
-            <li data-reveal class="card-lux rounded-[28px] bg-polar p-5 sm:p-6">
-              <p class="font-semibold">Best Workplaces™ in the Middle East 2026</p>
-              <p class="mt-1 text-sm text-[#6e6e73]">Ranked 56th in the Small category.</p>
-            </li>
-            <li data-reveal class="card-lux rounded-[28px] bg-polar p-5 sm:p-6">
-              <p class="font-semibold">Shortlisted for Consulting Firm of the Year</p>
-              <p class="mt-1 text-sm text-[#6e6e73]">Arabian Business Industry Awards 2026. Ceremony on 25 November.</p>
-            </li>
+          <div class="grid gap-3 sm:grid-cols-2 lg:col-span-3" data-reveal-group>
+            <div data-reveal class="card-light p-5 sm:p-6">
+              <span class="icon-gold h-10 w-10"><svg class="h-5 w-5"><use href="#i-check"/></svg></span>
+              <p class="mt-4 font-extrabold">Great Place To Work® Certified</p>
+              <p class="mt-1 text-sm text-ink/60">UAE, June 2026 to June 2027.</p>
+            </div>
+            <div data-reveal class="card-light p-5 sm:p-6">
+              <span class="icon-gold h-10 w-10"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M11.48 3.5a.56.56 0 011.04 0l2.13 5.11a.56.56 0 00.47.35l5.52.44c.5.04.7.66.32.99l-4.2 3.6a.56.56 0 00-.18.56l1.28 5.38a.56.56 0 01-.84.61l-4.73-2.88a.56.56 0 00-.58 0l-4.73 2.89a.56.56 0 01-.84-.61l1.28-5.39a.56.56 0 00-.18-.56l-4.2-3.6a.56.56 0 01.32-.99l5.52-.44a.56.56 0 00.47-.35l2.13-5.11z"/></svg></span>
+              <p class="mt-4 font-extrabold">Best Workplaces™ in the Middle East 2026</p>
+              <p class="mt-1 text-sm text-ink/60">Ranked 56th in the Small category.</p>
+            </div>
+            <div data-reveal class="card-light p-5 sm:p-6">
+              <span class="icon-gold h-10 w-10"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 21h8m-4-4v4M7 4h10v5a5 5 0 01-10 0V4zM17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3"/></svg></span>
+              <p class="mt-4 font-extrabold">Shortlisted for Consulting Firm of the Year</p>
+              <p class="mt-1 text-sm text-ink/60">Arabian Business Industry Awards 2026. Ceremony on 25 November.</p>
+            </div>
             <!-- TO CONFIRM with Deeraj: Qatar top 5 wording. Always say "in Qatar", never a global ranking. -->
-            <li data-reveal class="card-lux rounded-[28px] bg-polar p-5 sm:p-6">
-              <p class="font-semibold">Ranked among Qatar's top 5 consulting firms</p>
-              <p class="mt-1 text-sm text-[#6e6e73]">By the Ministry of Commerce and Industry, announced 13 January 2026.</p>
-            </li>
-          </ul>
+            <div data-reveal class="card-light p-5 sm:p-6">
+              <span class="icon-gold h-10 w-10"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l9-3 9 3M5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6"/></svg></span>
+              <p class="mt-4 font-extrabold">Ranked among Qatar's top 5 consulting firms</p>
+              <p class="mt-1 text-sm text-ink/60">By the Ministry of Commerce and Industry, announced 13 January 2026.</p>
+            </div>
+          </div>
         </div>
 
         <!-- TO CONFIRM with Deeraj: what the NSRCEL work was before using a stronger verb. -->
-        <div data-reveal class="mt-8 rounded-[28px] bg-polar p-6 sm:p-8">
-          <p class="text-sm font-semibold text-gold-600">Worked with</p>
-          <p class="mt-2 max-w-4xl text-[17px] leading-[1.47] sm:text-[19px]">We have worked with the IIM Bangalore incubation centre, NSRCEL, on emerging startup ideas. Our Idea HQ in Dubai is a certified incubator under the Hamdan Innovation Incubator.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ CORPORATE DECK (PDF) ============ -->
-    <section id="deck" class="scroll-mt-14 bg-navy-950 py-16 text-polar sm:py-28" x-data="deckViewer">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div data-reveal class="max-w-2xl">
-            <h2 class="display text-[32px] sm:text-5xl lg:text-[56px]">Our corporate deck</h2>
-            <p class="mt-4 text-[17px] leading-[1.47] text-steel sm:text-[19px]">Our story, leadership, offices and services in 32 pages. Flip through it here or download it to read later.</p>
-          </div>
-          <div data-reveal class="flex flex-wrap items-center gap-3">
-            <a :href="pdf" download="RAG-Holdings-Corporate-Deck-2026.pdf"
-               class="btn-gold inline-flex min-h-[50px] items-center gap-2 rounded-full px-6 font-medium text-navy-950">
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v12m0 0l-5-5m5 5l5-5M5 20h14"/></svg>
-              Download PDF <span class="text-navy-950/70">(10.6 MB)</span>
-            </a>
-            <a :href="pdf" target="_blank" rel="noopener"
-               class="inline-flex min-h-[50px] items-center rounded-full bg-navy-700/80 px-6 font-medium text-white transition hover:bg-[#424245]">
-              Open full PDF
-            </a>
-          </div>
-        </div>
-
-        <!-- current page -->
-        <div data-reveal class="mx-auto mt-10 max-w-5xl">
-          <div class="relative overflow-hidden rounded-[28px] bg-navy-900"
-               @touchstart.passive="touchX = $event.touches[0].clientX"
-               @touchend.passive="swipe($event.changedTouches[0].clientX)"
-               @keydown.left="prev()" @keydown.right="next()">
-            <img :src="src(i)" :alt="'Corporate deck, page ' + (i + 1) + ' of ' + n" class="aspect-video w-full object-contain" loading="lazy">
-            <button type="button" @click="prev()" :disabled="i === 0" aria-label="Previous page"
-                    class="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-navy-950/60 text-white backdrop-blur transition hover:bg-navy-950/80 disabled:opacity-0 sm:left-5">
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-            </button>
-            <button type="button" @click="next()" :disabled="i === n - 1" aria-label="Next page"
-                    class="absolute right-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-navy-950/60 text-white backdrop-blur transition hover:bg-navy-950/80 disabled:opacity-0 sm:right-5">
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-            </button>
-          </div>
-          <p class="mt-4 text-center text-sm text-steel">Page <span class="font-semibold text-polar" x-text="i + 1"></span> of <span x-text="n"></span></p>
-
-          <!-- page strip -->
-          <div x-ref="strip" class="mt-4 flex snap-x gap-3 overflow-x-auto pb-3 [scrollbar-width:thin]">
-            <template x-for="k in n" :key="k">
-              <button type="button" @click="go(k - 1)" :aria-label="'Show page ' + k" :aria-current="i === k - 1"
-                      class="w-28 shrink-0 snap-start overflow-hidden rounded-xl ring-2 transition sm:w-36"
-                      :class="i === k - 1 ? 'ring-gold-500' : 'ring-transparent opacity-60 hover:opacity-100'">
-                <img :src="src(k - 1)" alt="" class="aspect-video w-full object-cover" loading="lazy">
-              </button>
-            </template>
-          </div>
+        <div data-reveal class="mt-8 flex flex-col gap-4 rounded-3xl bg-ink p-6 text-white sm:flex-row sm:items-center sm:gap-8 sm:p-8">
+          <p class="shrink-0 text-xs font-bold uppercase tracking-[.28em] text-gold">Worked with</p>
+          <p class="text-base leading-relaxed text-white/80 sm:text-lg">We have worked with the IIM Bangalore incubation centre, NSRCEL, on emerging startup ideas. Our Idea HQ in Dubai is a certified incubator under the Hamdan Innovation Incubator.</p>
         </div>
       </div>
     </section>
 
     <!-- ============ 08 RAG CLUB ============ -->
-    <section id="club" class="bg-navy-900 py-16 text-polar sm:py-28">
-      <div class="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:px-8">
-        <div data-reveal="image" class="overflow-hidden rounded-[28px]"><img src="assets/img/rag-club.jpg" alt="Guests at RAG Club Chapter 6 at RAG Biz HQ" class="aspect-[16/10] w-full object-cover" loading="lazy"></div>
-        <div data-reveal>
-          <h2 class="display text-[32px] sm:text-5xl lg:text-[56px]">RAG Club</h2>
-          <p class="mt-4 text-[17px] leading-[1.47] text-steel sm:text-[19px]">A network for founders, investors and business leaders. Members meet in person and learn from each other.</p>
-          <div class="mt-6 rounded-[28px] bg-navy-950 p-5 sm:p-6">
-            <p class="text-sm font-semibold text-gold-400">Chapter 6, 22 October 2026</p>
+    <section id="club" class="bg-navy py-16 sm:py-24">
+      <div class="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
+        <div data-reveal class="relative">
+          <img src="assets/img/rag-club.jpg" alt="Guests at RAG Club Chapter 6 at RAG Biz HQ" class="aspect-[4/3] w-full rounded-3xl object-cover" loading="lazy">
+          <div class="absolute -bottom-5 left-5 flex items-center gap-3 rounded-2xl bg-white px-5 py-4 text-ink shadow-2xl shadow-black/30 sm:left-8">
+            <p class="gold-text text-4xl font-black leading-none">06</p>
+            <p class="text-xs font-bold uppercase leading-tight tracking-wide">Chapter<br>22 Oct 2026</p>
+          </div>
+        </div>
+        <div data-reveal class="pt-4 lg:pt-0">
+          <p class="eyebrow">Community</p>
+          <h2 class="h-display mt-4 text-[2rem] sm:text-5xl lg:text-6xl">RAG <span class="gold-text">Club</span></h2>
+          <p class="mt-5 text-base leading-relaxed text-white/75 sm:text-lg">A network for founders, investors and business leaders. Members meet in person and learn from each other.</p>
+          <div class="card-dark mt-6 p-5 sm:p-6">
+            <p class="text-xs font-bold uppercase tracking-[.2em] text-gold">Chapter 6, 22 October 2026</p>
             <p class="mt-2 text-white/85">Biohacking and longevity at work. Guests tried the equipment hands-on.</p>
           </div>
-          <p class="mt-5 text-steel">RAG Biz HQ is moving towards a Longevity-Inspired Business Centre.</p>
-          <button type="button" @click="talk('Partnership or collaboration')"
-                  class="btn-gold mt-7 inline-flex min-h-[48px] items-center rounded-full px-6 font-medium text-navy-950">
-            Ask about RAG Club
+          <p class="mt-5 text-white/70">RAG Biz HQ is moving towards a Longevity-Inspired Business Centre.</p>
+          <button type="button" @click="talk('Partnership or collaboration')" class="btn-gold mt-7 inline-flex h-12 items-center gap-2 rounded-xl px-6">
+            Ask about RAG Club <svg class="h-4 w-4"><use href="#i-arrow"/></svg>
           </button>
         </div>
       </div>
     </section>
 
     <!-- ============ 09 GET IN TOUCH ============ -->
-    <section id="contact" class="scroll-mt-14 bg-polar py-16 text-navy-800 sm:py-28">
-      <div class="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-5 lg:gap-14 lg:px-8">
-        <div data-reveal class="lg:col-span-2">
-          <h2 class="display text-[40px] sm:text-5xl lg:text-[56px]">Let's talk</h2>
-          <p class="mt-4 text-[17px] leading-[1.47] text-[#6e6e73] sm:text-[19px]">Tell us what you are planning. A RAG team member will message you.</p>
-          <div class="mt-8 hidden space-y-3 lg:block">
-            <a href="tel:+971586046586" class="flex items-center gap-3 font-medium hover:text-gold-600">
-              <span class="grid h-10 w-10 place-items-center rounded-full bg-white text-gold-600"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.5 4.49a1 1 0 01-.5 1.21l-2.26 1.13a11.04 11.04 0 005.52 5.52l1.13-2.26a1 1 0 011.21-.5l4.49 1.5a1 1 0 01.68.95V19a2 2 0 01-2 2h-1C9.72 21 3 14.28 3 6V5z"/></svg></span>
-              +971 58 604 6586
-            </a>
-            <a href="mailto:info@ragroup.ae" class="flex items-center gap-3 font-medium hover:text-gold-600">
-              <span class="grid h-10 w-10 place-items-center rounded-full bg-white text-gold-600"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></span>
-              info@ragroup.ae
-            </a>
+    <section id="contact" class="scroll-mt-20 bg-ink-deep py-16 sm:py-24">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div data-reveal class="grid overflow-hidden rounded-3xl border border-white/10 lg:grid-cols-5">
+          <!-- left: photo with contact details -->
+          <div class="relative isolate flex flex-col justify-between gap-10 p-6 sm:p-10 lg:col-span-2">
+            <img src="assets/img/calicut-inauguration.jpg" alt="" class="absolute inset-0 -z-10 h-full w-full object-cover" loading="lazy">
+            <div class="absolute inset-0 -z-10 bg-gradient-to-b from-ink/90 via-ink/85 to-ink/95"></div>
+            <div>
+              <img src="assets/img/rag-logo.png" alt="RAG Holdings" class="h-10 w-auto">
+              <p class="eyebrow mt-8">Get in touch</p>
+              <h2 class="h-display mt-3 text-[2.25rem] sm:text-5xl">Let's <span class="gold-text">talk</span></h2>
+              <p class="mt-4 text-white/75">Tell us what you are planning. A RAG team member will message you.</p>
+            </div>
+            <ul class="space-y-4 text-sm">
+              <li class="flex items-center gap-3">
+                <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-gold/40 text-gold"><svg class="h-4 w-4"><use href="#i-phone"/></svg></span>
+                <div><p class="text-[10px] font-bold uppercase tracking-[.22em] text-white/50">Call or WhatsApp</p><a href="tel:+971586046586" class="font-bold hover:text-gold-light">+971 58 604 6586</a></div>
+              </li>
+              <li class="flex items-center gap-3">
+                <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-gold/40 text-gold"><svg class="h-4 w-4"><use href="#i-mail"/></svg></span>
+                <div><p class="text-[10px] font-bold uppercase tracking-[.22em] text-white/50">Email</p><a href="mailto:info@ragroup.ae" class="font-bold hover:text-gold-light">info@ragroup.ae</a></div>
+              </li>
+            </ul>
           </div>
-        </div>
 
-        <div class="lg:col-span-3"
-             x-data="{
-               sent: false, sending: false,
-               form: { name: '', phone: '', email: '', company: '', role: '' },
-               // TO CONFIRM: where leads land (CRM or email). Set this to the endpoint once decided.
-               endpoint: '',
-               async submit() {
-                 this.sending = true
-                 const payload = { ...this.form, topic: topic, source: 'Nostalgia 2026 QR' }
-                 try {
-                   if (this.endpoint) await fetch(this.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-                   else console.info('Lead (no endpoint set yet):', payload)
-                   this.sent = true
-                 } finally { this.sending = false }
-               }
-             }">
-          <div data-reveal class="relative overflow-hidden rounded-[28px] bg-white p-6 text-navy-800 sm:p-10">
-
-            <form x-show="!sent" @submit.prevent="submit" class="space-y-4">
-              <div>
-                <label for="f-name" class="mb-1.5 block text-sm font-medium">Full name</label>
-                <input id="f-name" type="text" required autocomplete="name" x-model="form.name"
-                       class="h-12 w-full rounded-full border border-[#d2d2d7] bg-white px-5 text-base placeholder-steel focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/30">
-              </div>
-              <div>
-                <label for="f-phone" class="mb-1.5 block text-sm font-medium">Mobile or WhatsApp number</label>
-                <input id="f-phone" type="tel" required autocomplete="tel" inputmode="tel" x-model="form.phone" placeholder="+91 or +971"
-                       class="h-12 w-full rounded-full border border-[#d2d2d7] bg-white px-5 text-base placeholder-steel focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/30">
-              </div>
-              <div>
-                <label for="f-topic" class="mb-1.5 block text-sm font-medium">How can we help?</label>
-                <select id="f-topic" required x-model="topic"
-                        class="h-12 w-full rounded-full border border-[#d2d2d7] bg-white px-5 text-base focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/30">
+          <!-- right: form -->
+          <div class="bg-ink-2 p-6 sm:p-10 lg:col-span-3"
+               x-data="{
+                 sent: false, sending: false,
+                 form: { name: '', phone: '', email: '', company: '', role: '' },
+                 // TO CONFIRM: where leads land (CRM or email). Set this to the endpoint once decided.
+                 endpoint: '',
+                 async submit() {
+                   this.sending = true
+                   const payload = { ...this.form, topic: topic, source: 'Nostalgia 2026 QR' }
+                   try {
+                     if (this.endpoint) await fetch(this.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+                     else console.info('Lead (no endpoint set yet):', payload)
+                     this.sent = true
+                   } finally { this.sending = false }
+                 }
+               }">
+            <form x-show="!sent" @submit.prevent="submit" class="space-y-3">
+              <label class="sr-only" for="f-name">Full name</label>
+              <input id="f-name" type="text" required autocomplete="name" x-model="form.name" placeholder="Full name"
+                     class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
+              <label class="sr-only" for="f-phone">Mobile or WhatsApp number</label>
+              <input id="f-phone" type="tel" required autocomplete="tel" inputmode="tel" x-model="form.phone" placeholder="Mobile or WhatsApp number"
+                     class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
+              <div class="rounded-xl border border-white/15 bg-white/5 px-4 pt-2 focus-within:border-gold focus-within:ring-2 focus-within:ring-gold/30">
+                <label for="f-topic" class="block text-[10px] font-bold uppercase tracking-[.22em] text-gold">How can we help?</label>
+                <select id="f-topic" required x-model="topic" class="h-9 w-full border-0 bg-transparent p-0 text-base font-semibold text-white focus:outline-none focus:ring-0 [&>option]:text-ink">
                   <option value="" disabled>Choose one</option>
                   <option>Start a company in the UAE, Qatar or Singapore</option>
                   <option>Office space or co-working in Dubai</option>
@@ -670,22 +752,17 @@
                   <option>Something else</option>
                 </select>
               </div>
-              <div class="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label for="f-email" class="mb-1.5 block text-sm font-medium">Email <span class="font-normal text-steel">(optional)</span></label>
-                  <input id="f-email" type="email" autocomplete="email" x-model="form.email"
-                         class="h-12 w-full rounded-full border border-[#d2d2d7] bg-white px-5 text-base placeholder-steel focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/30">
-                </div>
-                <div>
-                  <label for="f-company" class="mb-1.5 block text-sm font-medium">Company or institution <span class="font-normal text-steel">(optional)</span></label>
-                  <input id="f-company" type="text" autocomplete="organization" x-model="form.company"
-                         class="h-12 w-full rounded-full border border-[#d2d2d7] bg-white px-5 text-base placeholder-steel focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/30">
-                </div>
+              <div class="grid gap-3 sm:grid-cols-2">
+                <label class="sr-only" for="f-email">Email (optional)</label>
+                <input id="f-email" type="email" autocomplete="email" x-model="form.email" placeholder="Email (optional)"
+                       class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
+                <label class="sr-only" for="f-company">Company or institution (optional)</label>
+                <input id="f-company" type="text" autocomplete="organization" x-model="form.company" placeholder="Company or institution (optional)"
+                       class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
               </div>
-              <div>
-                <label for="f-role" class="mb-1.5 block text-sm font-medium">Are you an alumnus, student or faculty? <span class="font-normal text-steel">(optional)</span></label>
-                <select id="f-role" x-model="form.role"
-                        class="h-12 w-full rounded-full border border-[#d2d2d7] bg-white px-5 text-base focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/30">
+              <div class="rounded-xl border border-white/15 bg-white/5 px-4 pt-2 focus-within:border-gold focus-within:ring-2 focus-within:ring-gold/30">
+                <label for="f-role" class="block text-[10px] font-bold uppercase tracking-[.22em] text-white/50">Alumnus, student or faculty? (optional)</label>
+                <select id="f-role" x-model="form.role" class="h-9 w-full border-0 bg-transparent p-0 text-base font-semibold text-white focus:outline-none focus:ring-0 [&>option]:text-ink">
                   <option value="">Choose one</option>
                   <option>Alumnus</option>
                   <option>Student</option>
@@ -693,36 +770,25 @@
                   <option>None of these</option>
                 </select>
               </div>
-              <button type="submit" :disabled="sending"
-                      class="btn-gold mt-2 inline-flex min-h-[52px] w-full items-center justify-center rounded-full text-base font-medium text-navy-950 disabled:opacity-60">
-                <span x-text="sending ? 'Sending…' : 'Send'">Send</span>
+              <button type="submit" :disabled="sending" class="btn-gold mt-2 inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl text-base disabled:opacity-60">
+                <span x-text="sending ? 'Sending…' : 'Send'">Send</span> <svg class="h-4 w-4"><use href="#i-arrow"/></svg>
               </button>
-              <p class="text-center text-xs leading-relaxed text-steel">We use your details only to reply to your enquiry. We do not share them.</p>
+              <p class="text-center text-xs text-white/50">We use your details only to reply to your enquiry. We do not share them.</p>
+              <p class="text-center text-sm text-white/60">Prefer WhatsApp?
+                <a href="https://wa.me/971586046586?text=Hi%20RAG%2C%20I%20scanned%20your%20QR%20at%20Nostalgia%202026." target="_blank" rel="noopener" class="inline-flex min-h-[44px] items-center font-bold text-gold-light hover:text-white">Chat with us</a>
+              </p>
             </form>
 
-            <div x-show="sent" x-cloak x-transition class="py-8 text-center">
-              <span class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-gold-500 text-navy-950">
-                <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-              </span>
-              <p class="mt-6 display text-3xl">Thank you.</p>
-              <p class="mx-auto mt-2 max-w-sm text-[#6e6e73]">We have your details. A RAG team member will message you on WhatsApp.</p>
-              <p class="mx-auto mt-4 max-w-sm text-sm text-[#6e6e73]">Save our number so you can find us: <a href="tel:+971586046586" class="font-medium text-navy-800">+971 58 604 6586</a>.</p>
+            <div x-show="sent" x-cloak x-transition class="flex h-full flex-col items-center justify-center py-8 text-center">
+              <span class="icon-gold h-16 w-16 rounded-full"><svg class="h-8 w-8"><use href="#i-check"/></svg></span>
+              <p class="h-display mt-6 text-3xl">Thank you.</p>
+              <p class="mt-3 max-w-sm text-white/75">We have your details. A RAG team member will message you on WhatsApp.</p>
+              <p class="mt-3 max-w-sm text-sm text-white/60">Save our number so you can find us: <a href="tel:+971586046586" class="font-bold text-white">+971 58 604 6586</a>.</p>
               <div class="mt-6 flex flex-wrap justify-center gap-3">
-                <a href="assets/rag-holdings.vcf" download="RAG-Holdings.vcf"
-                   class="btn-gold inline-flex min-h-[48px] items-center rounded-full px-6 font-medium text-navy-950">Save RAG contact</a>
-                <a href="https://www.instagram.com/ragholdings" target="_blank" rel="noopener"
-                   class="inline-flex min-h-[48px] items-center rounded-full bg-polar px-6 font-medium text-navy-800 transition hover:bg-[#e8e8ed]">Follow @ragholdings</a>
+                <a href="assets/rag-holdings.vcf" download="RAG-Holdings.vcf" class="btn-gold inline-flex h-12 items-center rounded-xl px-6">Save RAG contact</a>
+                <a href="https://www.instagram.com/ragholdings" target="_blank" rel="noopener" class="btn-glass inline-flex h-12 items-center rounded-xl px-6">Follow @ragholdings</a>
               </div>
             </div>
-          </div>
-
-          <div class="mt-5 flex flex-col items-center gap-2 sm:flex-row sm:justify-center">
-            <span class="text-sm text-[#6e6e73]">Prefer WhatsApp?</span>
-            <a href="https://wa.me/971586046586?text=Hi%20RAG%2C%20I%20scanned%20your%20QR%20at%20Nostalgia%202026."
-               target="_blank" rel="noopener"
-               class="inline-flex min-h-[44px] items-center px-2 text-sm text-gold-600 hover:underline hover:underline-offset-4">
-              Chat with us
-            </a>
           </div>
         </div>
       </div>
@@ -730,39 +796,41 @@
   </main>
 
   <!-- ============ 10 FOOTER ============ -->
-  <footer class="bg-navy-900 pt-16 pb-10 text-polar">
+  <footer class="relative overflow-hidden bg-ink pt-14 pb-28 lg:pb-12">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div data-reveal class="text-center">
-        <p class="display text-[32px] sm:text-5xl">Thank you, <span class="text-gold-grad">IIM Kozhikode</span></p>
-        <p class="mt-3 text-[17px] text-steel">See you at Nostalgia 2026.</p>
+      <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-4">
+          <img src="assets/img/rag-logo.png" alt="RAG Holdings" class="h-16 w-auto sm:h-20" loading="lazy">
+          <div>
+            <p class="text-xl font-extrabold uppercase sm:text-2xl">Thank you, <span class="gold-text">IIM Kozhikode</span></p>
+            <p class="text-sm text-white/60">See you at Nostalgia 2026.</p>
+          </div>
+        </div>
+        <button type="button" @click="openPopup()" class="btn-gold inline-flex h-12 w-fit items-center gap-2 rounded-xl px-6">Get in touch <svg class="h-4 w-4"><use href="#i-arrow"/></svg></button>
       </div>
 
-      <div class="mt-12 grid gap-10 border-t border-white/10 pt-10 sm:grid-cols-2 lg:grid-cols-4" data-reveal-group>
-        <div data-reveal>
-          <img src="assets/img/rag-logo.png" alt="RAG Holdings" class="h-12 w-auto" loading="lazy">
-          <p class="mt-4 text-sm text-steel">Dubai · Doha · Singapore · Calicut</p>
-        </div>
-        <div data-reveal>
-          <p class="text-xs font-semibold text-polar">Contact</p>
-          <ul class="mt-3 space-y-2 text-sm text-steel">
-            <li>UAE and WhatsApp: <a href="tel:+971586046586" class="hover:text-white">+971 58 604 6586</a></li>
-            <li>Qatar: <a href="tel:+97430584448" class="hover:text-white">+974 3058 4448</a></li>
-            <li><a href="mailto:info@ragroup.ae" class="hover:text-white">info@ragroup.ae</a></li>
-            <li><a href="https://www.ragroup.ae" target="_blank" rel="noopener" class="hover:text-white">www.ragroup.ae</a> · <a href="https://www.ragroup.qa" target="_blank" rel="noopener" class="hover:text-white">www.ragroup.qa</a></li>
+      <div class="mt-10 grid gap-8 border-t border-white/10 pt-8 text-sm sm:grid-cols-3">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[.28em] text-gold">Contact</p>
+          <ul class="mt-3 space-y-2 text-white/70">
+            <li>UAE and WhatsApp: <a href="tel:+971586046586" class="font-semibold text-white hover:text-gold-light">+971 58 604 6586</a></li>
+            <li>Qatar: <a href="tel:+97430584448" class="font-semibold text-white hover:text-gold-light">+974 3058 4448</a></li>
+            <li><a href="mailto:info@ragroup.ae" class="hover:text-gold-light">info@ragroup.ae</a></li>
+            <li><a href="https://www.ragroup.ae" target="_blank" rel="noopener" class="hover:text-gold-light">www.ragroup.ae</a> · <a href="https://www.ragroup.qa" target="_blank" rel="noopener" class="hover:text-gold-light">www.ragroup.qa</a></li>
           </ul>
         </div>
-        <div data-reveal>
-          <p class="text-xs font-semibold text-polar">Follow</p>
-          <ul class="mt-3 space-y-2 text-sm text-steel">
-            <li><a href="https://www.instagram.com/ragholdings" target="_blank" rel="noopener" class="hover:text-white">Instagram: @ragholdings</a></li>
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[.28em] text-gold">Follow</p>
+          <ul class="mt-3 space-y-2 text-white/70">
+            <li><a href="https://www.instagram.com/ragholdings" target="_blank" rel="noopener" class="hover:text-gold-light">Instagram: @ragholdings</a></li>
             <!-- TO FIX: replace with the real LinkedIn company page URL. -->
-            <li><a href="https://www.linkedin.com/search/results/companies/?keywords=RAG%20Holdings" target="_blank" rel="noopener" class="hover:text-white">LinkedIn: RAG Holdings</a></li>
-            <li><a href="assets/RAG-Holdings-Corporate-Deck-2026.pdf" download class="hover:text-white">Corporate deck (PDF)</a></li>
+            <li><a href="https://www.linkedin.com/search/results/companies/?keywords=RAG%20Holdings" target="_blank" rel="noopener" class="hover:text-gold-light">LinkedIn: RAG Holdings</a></li>
+            <li><a href="assets/RAG-Holdings-Corporate-Deck-2026.pdf" download @click="if (!unlocked) { $event.preventDefault(); openGate('download') }" class="hover:text-gold-light">Corporate deck (PDF)</a></li>
           </ul>
         </div>
-        <div data-reveal>
-          <p class="text-xs font-semibold text-polar">Offices</p>
-          <ul class="mt-3 space-y-2 text-sm text-steel">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[.28em] text-gold">Offices</p>
+          <ul class="mt-3 space-y-2 text-white/70">
             <li>Dubai: Biz HQ, Tower, Al Qusais</li>
             <li>Doha: West Bay</li>
             <li>Calicut: HiLITE Business Park</li>
@@ -771,26 +839,134 @@
         </div>
       </div>
 
-      <p class="mt-12 border-t border-white/10 pt-6 text-center text-xs text-steel">
-        © <span x-data x-text="new Date().getFullYear()">2026</span> RAG Holdings. All rights reserved.
-      </p>
+      <p class="mt-10 border-t border-white/10 pt-6 text-xs text-white/45">© <span x-data x-text="new Date().getFullYear()">2026</span> RAG Holdings. All rights reserved.</p>
     </div>
+    <p class="pointer-events-none mt-6 select-none whitespace-nowrap text-center text-[18vw] font-black uppercase leading-none tracking-tighter text-white/[.035]" aria-hidden="true">Nostalgia</p>
   </footer>
 
-  <!-- ============ STICKY ACTION BAR ============ -->
-  <div class="fixed inset-x-0 bottom-0 z-50 bg-navy-900/80 backdrop-blur-xl backdrop-saturate-150"
-       style="padding-bottom: env(safe-area-inset-bottom)">
+  <!-- ============ POPUP FORM ============ -->
+  <div x-show="popup" x-cloak class="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-6"
+       role="dialog" aria-modal="true" aria-labelledby="popup-title">
+    <div x-show="popup" x-transition.opacity.duration.300ms class="absolute inset-0 bg-ink-deep/80 backdrop-blur-sm" @click="popup = false"></div>
+
+    <div x-show="popup" x-trap.inert.noscroll="popup"
+         x-transition:enter="transition duration-500 ease-out" x-transition:enter-start="translate-y-8 opacity-0" x-transition:enter-end="translate-y-0 opacity-100"
+         x-transition:leave="transition duration-200 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="translate-y-4 opacity-0"
+         class="relative grid max-h-[92svh] w-full max-w-4xl overflow-y-auto rounded-t-3xl border border-white/10 bg-ink-2 shadow-2xl shadow-black/60 sm:rounded-3xl md:grid-cols-5"
+         x-data="{
+           sent: false, sending: false,
+           form: { name: '', email: '', phone: '', linkedin: '', message: '' },
+           // TO CONFIRM: where leads land (CRM or email). Set this to the endpoint once decided.
+           endpoint: '',
+           async submit() {
+             this.sending = true
+             const payload = { ...this.form, source: this.gate ? 'Nostalgia 2026 deck download' : 'Nostalgia 2026 popup' }
+             try {
+               if (this.endpoint) await fetch(this.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+               else console.info('Popup lead (no endpoint set yet):', payload)
+               this.sent = true
+               this.unlocked = true
+               try { localStorage.setItem('ragDeckUnlocked', '1') } catch (e) {}
+             } finally { this.sending = false }
+           }
+         }">
+      <button type="button" @click="popup = false" aria-label="Close"
+              class="absolute right-3 top-3 z-10 grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-ink/70 text-white backdrop-blur transition hover:border-gold hover:text-gold-light">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path stroke-linecap="round" d="M6 6l12 12M6 18L18 6"/></svg>
+      </button>
+
+      <!-- left: photo and details (hidden on small phones to keep the form short) -->
+      <div class="relative isolate hidden flex-col justify-between gap-8 p-8 md:col-span-2 md:flex">
+        <img src="assets/img/rag-club.jpg" alt="" class="absolute inset-0 -z-10 h-full w-full object-cover">
+        <div class="absolute inset-0 -z-10 bg-gradient-to-b from-ink/90 via-ink/80 to-ink/95"></div>
+        <div>
+          <img src="assets/img/rag-logo.png" alt="RAG Holdings" class="h-10 w-auto">
+          <p class="eyebrow mt-8">Nostalgia 2026</p>
+          <p x-show="!gate" class="h-display mt-3 text-4xl">Let's <span class="gold-text">connect</span></p>
+          <p x-show="gate" x-cloak class="h-display mt-3 text-4xl">Unlock the <span class="gold-text">corporate deck</span></p>
+          <p class="mt-3 text-sm leading-relaxed text-white/75" x-text="gate ? 'Fill in your details to view all 32 pages and download the PDF.' : 'Leave your details and a RAG team member will get back to you.'"></p>
+        </div>
+        <ul class="space-y-3 text-sm">
+          <li class="flex items-center gap-3">
+            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-gold/40 text-gold"><svg class="h-4 w-4"><use href="#i-phone"/></svg></span>
+            <a href="tel:+971586046586" class="font-bold hover:text-gold-light">+971 58 604 6586</a>
+          </li>
+          <li class="flex items-center gap-3">
+            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-gold/40 text-gold"><svg class="h-4 w-4"><use href="#i-mail"/></svg></span>
+            <a href="mailto:info@ragroup.ae" class="font-bold hover:text-gold-light">info@ragroup.ae</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- right: form -->
+      <div class="p-6 pt-8 sm:p-8 md:col-span-3">
+        <div class="md:hidden">
+          <p class="eyebrow">Nostalgia 2026</p>
+          <p x-show="!gate" class="h-display mt-2 text-3xl">Let's <span class="gold-text">connect</span></p>
+          <p x-show="gate" x-cloak class="h-display mt-2 text-3xl">Unlock the <span class="gold-text">corporate deck</span></p>
+          <p x-show="gate" x-cloak class="mt-2 text-sm text-white/70">Fill in your details to view all 32 pages and download the PDF.</p>
+        </div>
+        <h2 id="popup-title" class="sr-only">Send us your details</h2>
+
+        <form x-show="!sent" @submit.prevent="submit" class="mt-5 space-y-3 md:mt-0">
+          <label class="sr-only" for="p-name">Name</label>
+          <input id="p-name" type="text" required autocomplete="name" x-model="form.name" placeholder="Name"
+                 class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="sr-only" for="p-email">Email</label>
+            <input id="p-email" type="email" required autocomplete="email" x-model="form.email" placeholder="Email"
+                   class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
+            <label class="sr-only" for="p-phone">Mobile number</label>
+            <input id="p-phone" type="tel" required autocomplete="tel" inputmode="tel" x-model="form.phone" placeholder="Mobile number"
+                   class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
+          </div>
+          <label class="sr-only" for="p-linkedin">LinkedIn profile URL</label>
+          <input id="p-linkedin" type="url" autocomplete="url" x-model="form.linkedin" placeholder="LinkedIn profile URL (optional)"
+                 pattern="https?://.*" title="Paste the full link, starting with https://"
+                 class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
+          <label class="sr-only" for="p-message">Message</label>
+          <textarea id="p-message" rows="3" x-model="form.message" placeholder="Message"
+                    class="w-full resize-none rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30"></textarea>
+          <button type="submit" :disabled="sending" class="btn-gold inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl text-base disabled:opacity-60">
+            <span x-text="sending ? 'Sending…' : 'Submit'">Submit</span> <svg class="h-4 w-4"><use href="#i-arrow"/></svg>
+          </button>
+          <p class="text-center text-xs text-white/50">We use your details only to reply to you. We do not share them.</p>
+        </form>
+
+        <div x-show="sent" x-cloak class="flex flex-col items-center py-10 text-center">
+          <span class="icon-gold h-16 w-16 rounded-full"><svg class="h-8 w-8"><use href="#i-check"/></svg></span>
+          <p class="h-display mt-6 text-3xl">Thank you.</p>
+          <p x-show="!gate" class="mt-3 max-w-sm text-white/75">We have your details. A RAG team member will be in touch soon.</p>
+          <p x-show="gate" x-cloak class="mt-3 max-w-sm text-white/75">The corporate deck is unlocked. Download it, open it, or flip through it on the page.</p>
+          <div x-show="gate" x-cloak class="mt-6 flex w-full max-w-sm flex-col gap-3">
+            <a href="assets/RAG-Holdings-Corporate-Deck-2026.pdf" download="RAG-Holdings-Corporate-Deck-2026.pdf" class="btn-gold inline-flex h-12 items-center justify-center gap-2 rounded-xl px-6">
+              <svg class="h-5 w-5"><use href="#i-down"/></svg> Download PDF
+            </a>
+            <a href="assets/RAG-Holdings-Corporate-Deck-2026.pdf" target="_blank" rel="noopener" class="btn-glass inline-flex h-12 items-center justify-center rounded-xl px-6">Open full PDF</a>
+            <button type="button" @click="popup = false; $nextTick(() => document.getElementById('deck').scrollIntoView({ behavior: 'smooth' }))" class="inline-flex h-11 items-center justify-center text-sm font-bold text-gold-light hover:text-white">View it on the page</button>
+          </div>
+          <button x-show="!gate" type="button" @click="popup = false" class="btn-glass mt-6 inline-flex h-12 items-center rounded-xl px-6">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- back to top -->
+  <a href="#top" aria-label="Back to top"
+     x-data="{ show: false }" @scroll.window="show = scrollY > 800" x-show="show" x-cloak x-transition.opacity
+     class="fixed bottom-24 left-4 z-40 grid h-11 w-11 place-items-center rounded-full border border-gold/40 bg-ink/90 text-gold-light backdrop-blur lg:bottom-6 lg:left-6">
+    <svg class="h-4 w-4 -rotate-90"><use href="#i-arrow"/></svg>
+  </a>
+
+  <!-- ============ STICKY ACTION BAR (phones and tablets) ============ -->
+  <div class="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-ink/90 backdrop-blur-xl lg:hidden" style="padding-bottom: env(safe-area-inset-bottom)">
     <div class="mx-auto grid max-w-md grid-cols-2 gap-3 px-4 py-3">
-      <a href="https://wa.me/971586046586?text=Hi%20RAG%20Holdings%2C%20I%20scanned%20your%20QR%20at%20Nostalgia%202026."
-         target="_blank" rel="noopener"
-         class="btn-gold inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium text-navy-950 min-[360px]:text-base">
-        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.21 3.08.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35zM12.04 21.5h-.01a9.4 9.4 0 01-4.8-1.31l-.34-.2-3.57.93.95-3.48-.22-.36a9.43 9.43 0 01-1.45-5.03c0-5.2 4.24-9.44 9.45-9.44a9.4 9.4 0 016.68 2.77 9.38 9.38 0 012.76 6.68c0 5.21-4.24 9.44-9.45 9.44zm8.04-17.48A11.3 11.3 0 0012.04.7C5.78.7.68 5.8.68 12.06c0 2 .52 3.96 1.52 5.68L.58 23.3l5.7-1.5a11.3 11.3 0 005.75 1.47h.01c6.26 0 11.36-5.1 11.36-11.36 0-3.03-1.18-5.89-3.32-8.03z"/></svg>
-        WhatsApp us
+      <a href="https://wa.me/971586046586?text=Hi%20RAG%2C%20I%20scanned%20your%20QR%20at%20Nostalgia%202026." target="_blank" rel="noopener"
+         class="btn-gold inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm min-[360px]:text-base">
+        <svg class="h-5 w-5"><use href="#i-wa"/></svg> WhatsApp us
       </a>
-      <a href="tel:+971586046586"
-         class="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm min-[360px]:text-base bg-white/10 font-semibold text-white ring-1 ring-white/25 transition hover:bg-white/20">
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.5 4.49a1 1 0 01-.5 1.21l-2.26 1.13a11.04 11.04 0 005.52 5.52l1.13-2.26a1 1 0 011.21-.5l4.49 1.5a1 1 0 01.68.95V19a2 2 0 01-2 2h-1C9.72 21 3 14.28 3 6V5z"/></svg>
-        Call
+      <a href="tel:+971586046586" class="btn-glass inline-flex h-12 items-center justify-center gap-2 rounded-xl text-sm min-[360px]:text-base">
+        <svg class="h-5 w-5"><use href="#i-phone"/></svg> Call
       </a>
     </div>
   </div>
