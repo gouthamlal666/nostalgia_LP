@@ -1,0 +1,27 @@
+# Hostinger (LiteSpeed/Apache) settings for the landing page
+
+DirectoryIndex index.html
+
+# file types browsers need to recognise
+AddType application/manifest+json .webmanifest
+AddType text/vcard .vcf
+
+# compress text files
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json application/manifest+json image/svg+xml text/vcard
+</IfModule>
+
+# let browsers keep images, styles and the deck for a while; always re-check the page itself
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 1 week"
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/x-icon "access plus 1 month"
+  ExpiresByType application/pdf "access plus 1 month"
+</IfModule>
+
+# no folder listings
+Options -Indexes
