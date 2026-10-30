@@ -110,9 +110,12 @@
       x-data="{
         topic: '',
         popup: false,
-        // the corporate deck stays blurred until the visitor sends the popup form (a soft gate: the files are public)
+        // the corporate deck stays blurred until the visitor confirms in the popup (a soft gate: a page cannot detect a Google Form submit, and the files are public)
         unlocked: false,
         gate: '',
+        // Google Form shown in the popup (the full link; short forms.gle links do not embed). If empty, the popup offers WhatsApp instead.
+        formUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSfRhkZYEkri-MzbSaGAGEY7ZhFRQa7dwyFYR_orh3szqigbVg/viewform',
+        get formEmbed() { return this.formUrl + (this.formUrl.includes('?') ? '&' : '?') + 'embedded=true' },
         openGate(action) { this.gate = action; this.openPopup() },
         // every form also opens WhatsApp to RAG with the details already typed in; the visitor just presses send
         waLink: '',
@@ -821,26 +824,14 @@
          x-transition:leave="transition duration-200 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="translate-y-4 opacity-0"
          class="relative grid max-h-[92svh] w-full max-w-4xl overflow-y-auto rounded-t-3xl border border-white/10 bg-ink-2 shadow-2xl shadow-black/60 sm:rounded-3xl md:grid-cols-5"
          x-data="{
-           sent: false, sending: false,
-           form: { name: '', email: '', phone: '', jobTitle: '', company: '', linkedin: '', message: '' },
-           // TO CONFIRM: where leads land (CRM or email). Set this to the endpoint once decided.
-           endpoint: '',
-           async submit() {
-             this.sendToWhatsApp(this.gate ? 'Hi RAG, I scanned your QR at Nostalgia 2026. I would like your corporate deck.' : 'Hi RAG, I scanned your QR at Nostalgia 2026.', [
-               ['Name', this.form.name], ['Email', this.form.email], ['Mobile', this.form.phone],
-               ['Job title', this.form.jobTitle], ['Company', this.form.company], ['LinkedIn', this.form.linkedin], ['Message', this.form.message]
-             ])
-             this.sending = true
-             const payload = { ...this.form, source: this.gate ? 'Nostalgia 2026 deck download' : 'Nostalgia 2026 popup' }
-             try {
-               if (this.endpoint) await fetch(this.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-               else console.info('Popup lead (no endpoint set yet):', payload)
-               this.sent = true
-               this.unlocked = true
-               try { localStorage.setItem('ragDeckUnlocked', '1') } catch (e) {}
-             } finally { this.sending = false }
+           sent: false,
+           finish() {
+             this.sent = true
+             this.unlocked = true
+             try { localStorage.setItem('ragDeckUnlocked', '1') } catch (e) {}
            }
-         }">
+         }"
+         x-effect="if (!popup) sent = false">
       <button type="button" @click="popup = false" aria-label="Close"
               class="absolute right-3 top-3 z-10 grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-ink/70 text-white backdrop-blur transition hover:border-gold hover:text-gold-light">
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path stroke-linecap="round" d="M6 6l12 12M6 18L18 6"/></svg>
@@ -879,45 +870,27 @@
         </div>
         <h2 id="popup-title" class="sr-only">Send us your details</h2>
 
-        <form x-show="!sent" @submit.prevent="submit" class="mt-5 space-y-3 md:mt-0">
-          <label class="sr-only" for="p-name">Name</label>
-          <input id="p-name" type="text" required autocomplete="name" x-model="form.name" placeholder="Name"
-                 class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
-          <div class="grid gap-3 sm:grid-cols-2">
-            <label class="sr-only" for="p-email">Email</label>
-            <input id="p-email" type="email" required autocomplete="email" x-model="form.email" placeholder="Email"
-                   class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
-            <label class="sr-only" for="p-phone">Mobile number</label>
-            <input id="p-phone" type="tel" required autocomplete="tel" inputmode="tel" x-model="form.phone" placeholder="Mobile number"
-                   class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
-          </div>
-          <div class="grid gap-3">
-            <label class="sr-only" for="p-job">Job title</label>
-            <input id="p-job" type="text" required autocomplete="organization-title" x-model="form.jobTitle" placeholder="Enter your job title"
-                   class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
-            <label class="sr-only" for="p-company">Company name</label>
-            <input id="p-company" type="text" required autocomplete="organization" x-model="form.company" placeholder="Enter your company name"
-                   class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
-          </div>
-          <label class="sr-only" for="p-linkedin">LinkedIn profile URL</label>
-          <input id="p-linkedin" type="url" autocomplete="url" x-model="form.linkedin" placeholder="LinkedIn profile URL (optional)"
-                 pattern="https?://.*" title="Paste the full link, starting with https://"
-                 class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
-          <label class="sr-only" for="p-message">Message</label>
-          <textarea id="p-message" rows="3" x-model="form.message" placeholder="Message"
-                    class="w-full resize-none rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30"></textarea>
-          <button type="submit" :disabled="sending" class="btn-gold inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl text-base disabled:opacity-60">
-            <span x-text="sending ? 'Sending…' : 'Submit'">Submit</span> <svg class="h-4 w-4"><use href="#i-arrow"/></svg>
+        <div x-show="!sent" class="mt-5 md:mt-0">
+          <!-- Google Form: loads only when the popup opens -->
+          <template x-if="popup && formUrl">
+            <iframe :src="formEmbed" title="RAG Holdings enquiry form" class="h-[62svh] w-full rounded-xl border-0 bg-white md:h-[520px]"></iframe>
+          </template>
+          <button x-show="formUrl && !unlocked" type="button" @click="finish()" class="btn-gold mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm sm:text-base">
+            <svg class="h-4 w-4"><use href="#i-lock"/></svg> I've submitted, unlock the deck
           </button>
-          <p class="text-center text-xs text-white/50">We use your details only to reply to you. We do not share them.</p>
-        </form>
+          <!-- until the form link is added -->
+          <div x-show="!formUrl" class="flex flex-col items-center py-10 text-center">
+            <p class="max-w-sm text-white/75">Message us on WhatsApp and a RAG team member will reply.</p>
+            <a href="https://wa.me/971586046586?text=Hi%20RAG%2C%20I%20scanned%20your%20QR%20at%20Nostalgia%202026." target="_blank" rel="noopener" @click="finish()"
+               class="btn-gold mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-xl px-6"><svg class="h-5 w-5"><use href="#i-wa"/></svg> Message us on WhatsApp</a>
+          </div>
+        </div>
 
         <div x-show="sent" x-cloak class="flex flex-col items-center py-10 text-center">
           <span class="icon-gold h-16 w-16 rounded-full"><svg class="h-8 w-8"><use href="#i-check"/></svg></span>
           <p class="h-display mt-6 text-3xl">Thank you.</p>
-          <p x-show="!gate" class="mt-3 max-w-sm text-white/75">We opened WhatsApp with your details. Press send there and a RAG team member will reply.</p>
-          <p x-show="gate" x-cloak class="mt-3 max-w-sm text-white/75">The corporate deck is unlocked. We also opened WhatsApp with your details; press send there.</p>
-          <a :href="waLink" target="_blank" rel="noopener" class="mt-2 inline-flex min-h-[44px] items-center gap-2 text-sm font-bold text-gold-light hover:text-white"><svg class="h-4 w-4"><use href="#i-wa"/></svg> WhatsApp did not open? Tap here</a>
+          <p x-show="!gate" class="mt-3 max-w-sm text-white/75">A RAG team member will be in touch soon.</p>
+          <p x-show="gate" x-cloak class="mt-3 max-w-sm text-white/75">The corporate deck is unlocked. Download it, open it, or flip through it on the page.</p>
           <div x-show="gate" x-cloak class="mt-6 flex w-full max-w-sm flex-col gap-3">
             <a href="assets/RAG-Holdings-Corporate-Deck-2026.pdf" download="RAG-Holdings-Corporate-Deck-2026.pdf" class="btn-gold inline-flex h-12 items-center justify-center gap-2 rounded-xl px-6">
               <svg class="h-5 w-5"><use href="#i-down"/></svg> Download PDF
