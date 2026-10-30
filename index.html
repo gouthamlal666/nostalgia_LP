@@ -110,12 +110,9 @@
       x-data="{
         topic: '',
         popup: false,
-        // the corporate deck stays blurred until the visitor confirms in the popup (a soft gate: a page cannot detect a Google Form submit, and the files are public)
+        // the corporate deck stays blurred until the visitor sends the popup form (a soft gate: the files are public)
         unlocked: false,
         gate: '',
-        // Google Form shown in the popup (the full link; short forms.gle links do not embed). If empty, the popup offers WhatsApp instead.
-        formUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSfRhkZYEkri-MzbSaGAGEY7ZhFRQa7dwyFYR_orh3szqigbVg/viewform',
-        get formEmbed() { return this.formUrl + (this.formUrl.includes('?') ? '&' : '?') + 'embedded=true' },
         openGate(action) { this.gate = action; this.openPopup() },
         // every form also opens WhatsApp to RAG with the details already typed in; the visitor just presses send
         waLink: '',
@@ -824,14 +821,29 @@
          x-transition:leave="transition duration-200 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="translate-y-4 opacity-0"
          class="relative grid max-h-[92svh] w-full max-w-4xl overflow-y-auto rounded-t-3xl border border-white/10 bg-ink-2 shadow-2xl shadow-black/60 sm:rounded-3xl md:grid-cols-5"
          x-data="{
-           sent: false,
-           finish() {
-             this.sent = true
-             this.unlocked = true
-             try { localStorage.setItem('ragDeckUnlocked', '1') } catch (e) {}
+           sent: false, sending: false, failed: false,
+           form: { name: '', phone: '', email: '', company: '', designation: '' },
+           async submit() {
+             this.sending = true; this.failed = false
+             // answers go to the IIM - NOSTALGIA Google Form; entry IDs change if its questions are deleted and re-added
+             const body = new URLSearchParams({
+               'entry.510533233': this.form.name.trim(),
+               'entry.1159837384': this.form.phone.trim(),
+               'entry.939291365': this.form.email.trim(),
+               'entry.892195717': this.form.company.trim(),
+               'entry.1448850291': this.form.designation.trim(),
+             })
+             try {
+               // Google does not let a page read the reply, so this only fails when the request cannot be sent
+               await fetch('https://docs.google.com/forms/d/e/1FAIpQLSfRhkZYEkri-MzbSaGAGEY7ZhFRQa7dwyFYR_orh3szqigbVg/formResponse', { method: 'POST', mode: 'no-cors', body })
+               this.sent = true
+               this.unlocked = true
+               this.form = { name: '', phone: '', email: '', company: '', designation: '' }
+               try { localStorage.setItem('ragDeckUnlocked', '1') } catch (e) {}
+             } catch (e) { this.failed = true } finally { this.sending = false }
            }
          }"
-         x-effect="if (!popup) sent = false">
+         x-effect="if (!popup) { sent = false; failed = false }">
       <button type="button" @click="popup = false" aria-label="Close"
               class="absolute right-3 top-3 z-10 grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-ink/70 text-white backdrop-blur transition hover:border-gold hover:text-gold-light">
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path stroke-linecap="round" d="M6 6l12 12M6 18L18 6"/></svg>
@@ -870,21 +882,28 @@
         </div>
         <h2 id="popup-title" class="sr-only">Send us your details</h2>
 
-        <div x-show="!sent" class="mt-5 md:mt-0">
-          <!-- Google Form: loads only when the popup opens -->
-          <template x-if="popup && formUrl">
-            <iframe :src="formEmbed" title="RAG Holdings enquiry form" class="h-[62svh] w-full rounded-xl border-0 bg-white md:h-[520px]"></iframe>
-          </template>
-          <button x-show="formUrl && !unlocked" type="button" @click="finish()" class="btn-gold mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm sm:text-base">
-            <svg class="h-4 w-4"><use href="#i-lock"/></svg> I've submitted, unlock the deck
+        <form x-show="!sent" @submit.prevent="submit" class="mt-5 space-y-3 md:mt-0">
+          <label class="sr-only" for="p-name">Visitor name</label>
+          <input id="p-name" type="text" required pattern=".*\S.*" title="Please enter your name" autocomplete="name" x-model="form.name" placeholder="Visitor name"
+                 class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
+          <label class="sr-only" for="p-phone">Contact number</label>
+          <input id="p-phone" type="tel" required pattern="[+0-9 \(\)\-]{7,20}" title="Please enter a valid phone number" autocomplete="tel" inputmode="tel" x-model="form.phone" placeholder="Contact number"
+                 class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
+          <label class="sr-only" for="p-email">Email ID</label>
+          <input id="p-email" type="email" required autocomplete="email" x-model="form.email" placeholder="Email ID"
+                 class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
+          <label class="sr-only" for="p-company">Company name</label>
+          <input id="p-company" type="text" required pattern=".*\S.*" title="Please enter your company name" autocomplete="organization" x-model="form.company" placeholder="Company name"
+                 class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
+          <label class="sr-only" for="p-designation">Designation</label>
+          <input id="p-designation" type="text" required pattern=".*\S.*" title="Please enter your designation" autocomplete="organization-title" x-model="form.designation" placeholder="Designation"
+                 class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
+          <p x-show="failed" x-cloak role="alert" class="text-sm font-semibold text-gold-light">Your details could not be sent. Check your connection and try again.</p>
+          <button type="submit" :disabled="sending" class="btn-gold inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl text-base disabled:opacity-60">
+            <span x-text="sending ? 'Sending…' : 'Submit'">Submit</span> <svg class="h-4 w-4"><use href="#i-arrow"/></svg>
           </button>
-          <!-- until the form link is added -->
-          <div x-show="!formUrl" class="flex flex-col items-center py-10 text-center">
-            <p class="max-w-sm text-white/75">Message us on WhatsApp and a RAG team member will reply.</p>
-            <a href="https://wa.me/971586046586?text=Hi%20RAG%2C%20I%20scanned%20your%20QR%20at%20Nostalgia%202026." target="_blank" rel="noopener" @click="finish()"
-               class="btn-gold mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-xl px-6"><svg class="h-5 w-5"><use href="#i-wa"/></svg> Message us on WhatsApp</a>
-          </div>
-        </div>
+          <p class="text-center text-xs text-white/50">We use your details only to reply to you. We do not share them.</p>
+        </form>
 
         <div x-show="sent" x-cloak class="flex flex-col items-center py-10 text-center">
           <span class="icon-gold h-16 w-16 rounded-full"><svg class="h-8 w-8"><use href="#i-check"/></svg></span>
