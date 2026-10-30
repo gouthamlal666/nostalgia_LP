@@ -56,6 +56,33 @@
         },
       }))
 
+      // both lead forms: valid answers go to the IIM - NOSTALGIA Google Form and unlock the deck
+      Alpine.data('leadForm', () => ({
+        sent: false,
+        sending: false,
+        failed: false,
+        form: { name: '', phone: '', email: '', company: '', designation: '' },
+        async submit() {
+          this.sending = true; this.failed = false
+          // entry IDs change if the Google Form's questions are deleted and re-added
+          const body = new URLSearchParams({
+            'entry.510533233': this.form.name.trim(),
+            'entry.1159837384': this.form.phone.trim(),
+            'entry.939291365': this.form.email.trim(),
+            'entry.892195717': this.form.company.trim(),
+            'entry.1448850291': this.form.designation.trim(),
+          })
+          try {
+            // Google does not let a page read the reply, so this only fails when the request cannot be sent
+            await fetch('https://docs.google.com/forms/d/e/1FAIpQLSfRhkZYEkri-MzbSaGAGEY7ZhFRQa7dwyFYR_orh3szqigbVg/formResponse', { method: 'POST', mode: 'no-cors', body })
+            this.sent = true
+            this.unlocked = true
+            this.form = { name: '', phone: '', email: '', company: '', designation: '' }
+            try { localStorage.setItem('ragDeckUnlocked', '1') } catch (e) {}
+          } catch (e) { this.failed = true } finally { this.sending = false }
+        },
+      }))
+
       // corporate deck: one large page plus a strip of page thumbnails
       Alpine.data('deckViewer', () => ({
         n: 32,
@@ -108,23 +135,12 @@
 
 <body class="bg-ink font-sans text-white antialiased"
       x-data="{
-        topic: '',
         popup: false,
         // the corporate deck stays blurred until the visitor sends the popup form (a soft gate: the files are public)
         unlocked: false,
         gate: '',
         openGate(action) { this.gate = action; this.openPopup() },
-        // every form also opens WhatsApp to RAG with the details already typed in; the visitor just presses send
-        waLink: '',
-        sendToWhatsApp(intro, fields) {
-          const lines = fields.filter(([, v]) => v && String(v).trim()).map(([k, v]) => k + ': ' + String(v).trim())
-          this.waLink = 'https://wa.me/971586046586?text=' + encodeURIComponent([intro, '', ...lines].join('\n'))
-          // opened straight from the submit click so browsers do not block it; if they still do, go there in this tab
-          const w = window.open(this.waLink, '_blank')
-          if (w) w.opener = null
-          else location.href = this.waLink
-        },
-        talk(t = '') { this.topic = t; document.getElementById('contact').scrollIntoView({ behavior: 'smooth' }) },
+        talk() { document.getElementById('contact').scrollIntoView({ behavior: 'smooth' }) },
         openPopup() { this.popup = true; try { sessionStorage.setItem('ragPopupSeen', '1') } catch (e) {} },
         init() {
           // show the popup once per visit, after the visitor has had time to read the hero
@@ -524,7 +540,7 @@
                 </div>
               </template>
             </div>
-            <button type="button" @click="talk('Start a company in the UAE, Qatar or Singapore')" class="btn-gold mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-xl px-6">
+            <button type="button" @click="talk()" class="btn-gold mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-xl px-6">
               Start your company with us <svg class="h-4 w-4"><use href="#i-arrow"/></svg>
             </button>
           </div>
@@ -615,7 +631,7 @@
             <p class="eyebrow">Spoken at IIM Kozhikode, 29 August 2026</p>
             <p class="mt-4 text-base leading-relaxed text-white/80 sm:text-lg">Rassal Ahmed, Mohammed Aslam and Deeraj Rao spoke to IIMK students about the Gulf market and global leadership. They also covered market expansion and business culture.</p>
             <div class="mt-6 flex flex-wrap gap-3">
-              <button type="button" @click="talk('Careers at Calicut')" class="btn-gold inline-flex h-12 items-center gap-2 rounded-xl px-6">Careers at Calicut <svg class="h-4 w-4"><use href="#i-arrow"/></svg></button>
+              <button type="button" @click="talk()" class="btn-gold inline-flex h-12 items-center gap-2 rounded-xl px-6">Careers at Calicut <svg class="h-4 w-4"><use href="#i-arrow"/></svg></button>
               <a href="https://www.ragroup.ae/rag-holdings-at-iim-kozhikode" target="_blank" rel="noopener" class="btn-glass inline-flex h-12 items-center rounded-xl px-6">Read about our IIMK session</a>
             </div>
           </div>
@@ -642,7 +658,7 @@
             <p class="mt-2 text-white/85">Biohacking and longevity at work. Guests tried the equipment hands-on.</p>
           </div>
           <p class="mt-5 text-white/70">RAG Biz HQ is moving towards a Longevity-Inspired Business Centre.</p>
-          <button type="button" @click="talk('Partnership or collaboration')" class="btn-gold mt-7 inline-flex h-12 items-center gap-2 rounded-xl px-6">
+          <button type="button" @click="talk()" class="btn-gold mt-7 inline-flex h-12 items-center gap-2 rounded-xl px-6">
             Ask about RAG Club <svg class="h-4 w-4"><use href="#i-arrow"/></svg>
           </button>
         </div>
@@ -677,68 +693,28 @@
 
           <!-- right: form -->
           <div class="bg-ink-2 p-6 sm:p-10 lg:col-span-3"
-               x-data="{
-                 sent: false, sending: false,
-                 form: { name: '', phone: '', email: '', company: '', role: '' },
-                 // TO CONFIRM: where leads land (CRM or email). Set this to the endpoint once decided.
-                 endpoint: '',
-                 async submit() {
-                   this.sendToWhatsApp('Hi RAG, I scanned your QR at Nostalgia 2026.', [
-                     ['Name', this.form.name], ['Mobile', this.form.phone], ['How can you help', topic],
-                     ['Email', this.form.email], ['Company or institution', this.form.company], ['I am', this.form.role]
-                   ])
-                   this.sending = true
-                   const payload = { ...this.form, topic: topic, source: 'Nostalgia 2026 QR' }
-                   try {
-                     if (this.endpoint) await fetch(this.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-                     else console.info('Lead (no endpoint set yet):', payload)
-                     this.sent = true
-                   } finally { this.sending = false }
-                 }
-               }">
+               x-data="leadForm">
             <form x-show="!sent" @submit.prevent="submit" class="space-y-3">
-              <label class="sr-only" for="f-name">Full name</label>
-              <input id="f-name" type="text" required autocomplete="name" x-model="form.name" placeholder="Full name"
+              <label class="sr-only" for="f-name">Visitor name</label>
+              <input id="f-name" type="text" required pattern=".*\S.*" title="Please enter your name" autocomplete="name" x-model="form.name" placeholder="Visitor name"
                      class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
-              <label class="sr-only" for="f-phone">Mobile or WhatsApp number</label>
-              <input id="f-phone" type="tel" required autocomplete="tel" inputmode="tel" x-model="form.phone" placeholder="Mobile or WhatsApp number"
+              <label class="sr-only" for="f-phone">Contact number</label>
+              <input id="f-phone" type="tel" required pattern="[+0-9 \(\)\-]{7,20}" title="Please enter a valid phone number" autocomplete="tel" inputmode="tel" x-model="form.phone" placeholder="Contact number"
                      class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
-              <div class="rounded-xl border border-white/15 bg-white/5 px-4 pt-2 focus-within:border-gold focus-within:ring-2 focus-within:ring-gold/30">
-                <label for="f-topic" class="block text-[10px] font-bold uppercase tracking-[.22em] text-gold">How can we help?</label>
-                <select id="f-topic" required x-model="topic" class="h-9 w-full border-0 bg-transparent p-0 text-base font-semibold text-white focus:outline-none focus:ring-0 [&>option]:text-ink">
-                  <option value="" disabled>Choose one</option>
-                  <option>Start a company in the UAE, Qatar or Singapore</option>
-                  <option>Office space or co-working in Dubai</option>
-                  <option>Visa or Golden Visa</option>
-                  <option>Set up in India</option>
-                  <option>Careers at Calicut</option>
-                  <option>Accounting, tax or trademark</option>
-                  <option>Partnership or collaboration</option>
-                  <option>Something else</option>
-                </select>
-              </div>
-              <div class="grid gap-3 sm:grid-cols-2">
-                <label class="sr-only" for="f-email">Email</label>
-                <input id="f-email" type="email" required autocomplete="email" x-model="form.email" placeholder="Email"
-                       class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
-                <label class="sr-only" for="f-company">Company or institution (optional)</label>
-                <input id="f-company" type="text" autocomplete="organization" x-model="form.company" placeholder="Company or institution (optional)"
-                       class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
-              </div>
-              <div class="rounded-xl border border-white/15 bg-white/5 px-4 pt-2 focus-within:border-gold focus-within:ring-2 focus-within:ring-gold/30">
-                <label for="f-role" class="block text-[10px] font-bold uppercase tracking-[.22em] text-white/50">Alumnus, student or faculty? (optional)</label>
-                <select id="f-role" x-model="form.role" class="h-9 w-full border-0 bg-transparent p-0 text-base font-semibold text-white focus:outline-none focus:ring-0 [&>option]:text-ink">
-                  <option value="">Choose one</option>
-                  <option>Alumnus</option>
-                  <option>Student</option>
-                  <option>Faculty</option>
-                  <option>None of these</option>
-                </select>
-              </div>
+              <label class="sr-only" for="f-email">Email ID</label>
+              <input id="f-email" type="email" required autocomplete="email" x-model="form.email" placeholder="Email ID"
+                     class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
+              <label class="sr-only" for="f-company">Company name</label>
+              <input id="f-company" type="text" required pattern=".*\S.*" title="Please enter your company name" autocomplete="organization" x-model="form.company" placeholder="Company name"
+                     class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
+              <label class="sr-only" for="f-designation">Designation</label>
+              <input id="f-designation" type="text" required pattern=".*\S.*" title="Please enter your designation" autocomplete="organization-title" x-model="form.designation" placeholder="Designation"
+                     class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
+              <p x-show="failed" x-cloak role="alert" class="text-sm font-semibold text-gold-light">Your details could not be sent. Check your connection and try again.</p>
               <button type="submit" :disabled="sending" class="btn-gold mt-2 inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl text-base disabled:opacity-60">
-                <span x-text="sending ? 'Sending…' : 'Send'">Send</span> <svg class="h-4 w-4"><use href="#i-arrow"/></svg>
+                <span x-text="sending ? 'Sending…' : 'Submit'">Submit</span> <svg class="h-4 w-4"><use href="#i-arrow"/></svg>
               </button>
-              <p class="text-center text-xs text-white/50">We use your details only to reply to your enquiry. We do not share them.</p>
+              <p class="text-center text-xs text-white/50">We use your details only to reply to you. We do not share them.</p>
               <p class="text-center text-sm text-white/60">Prefer WhatsApp?
                 <a href="https://wa.me/971586046586?text=Hi%20RAG%2C%20I%20scanned%20your%20QR%20at%20Nostalgia%202026." target="_blank" rel="noopener" class="inline-flex min-h-[44px] items-center font-bold text-gold-light hover:text-white">Chat with us</a>
               </p>
@@ -747,8 +723,7 @@
             <div x-show="sent" x-cloak x-transition class="flex h-full flex-col items-center justify-center py-8 text-center">
               <span class="icon-gold h-16 w-16 rounded-full"><svg class="h-8 w-8"><use href="#i-check"/></svg></span>
               <p class="h-display mt-6 text-3xl">Thank you.</p>
-              <p class="mt-3 max-w-sm text-white/75">We opened WhatsApp with your details. Press send there and a RAG team member will reply.</p>
-              <a :href="waLink" target="_blank" rel="noopener" class="mt-2 inline-flex min-h-[44px] items-center gap-2 text-sm font-bold text-gold-light hover:text-white"><svg class="h-4 w-4"><use href="#i-wa"/></svg> WhatsApp did not open? Tap here</a>
+              <p class="mt-3 max-w-sm text-white/75">We have your details. A RAG team member will be in touch soon. The corporate deck is now unlocked too.</p>
               <p class="mt-3 max-w-sm text-sm text-white/60">Save our number so you can find us: <a href="tel:+971586046586" class="font-bold text-white">+971 58 604 6586</a>.</p>
               <div class="mt-6 flex flex-wrap justify-center gap-3">
                 <a href="assets/rag-holdings.vcf" download="RAG-Holdings.vcf" class="btn-gold inline-flex h-12 items-center rounded-xl px-6">Save RAG contact</a>
@@ -820,29 +795,7 @@
          x-transition:enter="transition duration-500 ease-out" x-transition:enter-start="translate-y-8 opacity-0" x-transition:enter-end="translate-y-0 opacity-100"
          x-transition:leave="transition duration-200 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="translate-y-4 opacity-0"
          class="relative grid max-h-[92svh] w-full max-w-4xl overflow-y-auto rounded-t-3xl border border-white/10 bg-ink-2 shadow-2xl shadow-black/60 sm:rounded-3xl md:grid-cols-5"
-         x-data="{
-           sent: false, sending: false, failed: false,
-           form: { name: '', phone: '', email: '', company: '', designation: '' },
-           async submit() {
-             this.sending = true; this.failed = false
-             // answers go to the IIM - NOSTALGIA Google Form; entry IDs change if its questions are deleted and re-added
-             const body = new URLSearchParams({
-               'entry.510533233': this.form.name.trim(),
-               'entry.1159837384': this.form.phone.trim(),
-               'entry.939291365': this.form.email.trim(),
-               'entry.892195717': this.form.company.trim(),
-               'entry.1448850291': this.form.designation.trim(),
-             })
-             try {
-               // Google does not let a page read the reply, so this only fails when the request cannot be sent
-               await fetch('https://docs.google.com/forms/d/e/1FAIpQLSfRhkZYEkri-MzbSaGAGEY7ZhFRQa7dwyFYR_orh3szqigbVg/formResponse', { method: 'POST', mode: 'no-cors', body })
-               this.sent = true
-               this.unlocked = true
-               this.form = { name: '', phone: '', email: '', company: '', designation: '' }
-               try { localStorage.setItem('ragDeckUnlocked', '1') } catch (e) {}
-             } catch (e) { this.failed = true } finally { this.sending = false }
-           }
-         }"
+         x-data="leadForm"
          x-effect="if (!popup) { sent = false; failed = false }">
       <button type="button" @click="popup = false" aria-label="Close"
               class="absolute right-3 top-3 z-10 grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-ink/70 text-white backdrop-blur transition hover:border-gold hover:text-gold-light">
