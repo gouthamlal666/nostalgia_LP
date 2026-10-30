@@ -807,7 +807,7 @@
          class="relative grid max-h-[92svh] w-full max-w-4xl overflow-y-auto rounded-t-3xl border border-white/10 bg-ink-2 shadow-2xl shadow-black/60 sm:rounded-3xl md:grid-cols-5"
          x-data="{
            sent: false, sending: false,
-           form: { name: '', email: '', phone: '', linkedin: '', message: '' },
+           form: { name: '', email: '', phone: '', jobTitle: '', company: '', linkedin: '', message: '' },
            // TO CONFIRM: where leads land (CRM or email). Set this to the endpoint once decided.
            endpoint: '',
            async submit() {
@@ -870,6 +870,14 @@
                    class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
             <label class="sr-only" for="p-phone">Mobile number</label>
             <input id="p-phone" type="tel" required autocomplete="tel" inputmode="tel" x-model="form.phone" placeholder="Mobile number"
+                   class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
+          </div>
+          <div class="grid gap-3">
+            <label class="sr-only" for="p-job">Job title</label>
+            <input id="p-job" type="text" required autocomplete="organization-title" x-model="form.jobTitle" placeholder="Enter your job title"
+                   class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
+            <label class="sr-only" for="p-company">Company name</label>
+            <input id="p-company" type="text" required autocomplete="organization" x-model="form.company" placeholder="Enter your company name"
                    class="h-[52px] w-full rounded-xl border border-white/15 bg-white/5 px-4 text-base text-white placeholder-white/45 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30">
           </div>
           <label class="sr-only" for="p-linkedin">LinkedIn profile URL</label>
