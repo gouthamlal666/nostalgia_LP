@@ -114,6 +114,16 @@
         unlocked: false,
         gate: '',
         openGate(action) { this.gate = action; this.openPopup() },
+        // every form also opens WhatsApp to RAG with the details already typed in; the visitor just presses send
+        waLink: '',
+        sendToWhatsApp(intro, fields) {
+          const lines = fields.filter(([, v]) => v && String(v).trim()).map(([k, v]) => k + ': ' + String(v).trim())
+          this.waLink = 'https://wa.me/971586046586?text=' + encodeURIComponent([intro, '', ...lines].join('\n'))
+          // opened straight from the submit click so browsers do not block it; if they still do, go there in this tab
+          const w = window.open(this.waLink, '_blank')
+          if (w) w.opener = null
+          else location.href = this.waLink
+        },
         talk(t = '') { this.topic = t; document.getElementById('contact').scrollIntoView({ behavior: 'smooth' }) },
         openPopup() { this.popup = true; try { sessionStorage.setItem('ragPopupSeen', '1') } catch (e) {} },
         init() {
@@ -673,6 +683,10 @@
                  // TO CONFIRM: where leads land (CRM or email). Set this to the endpoint once decided.
                  endpoint: '',
                  async submit() {
+                   this.sendToWhatsApp('Hi RAG, I scanned your QR at Nostalgia 2026.', [
+                     ['Name', this.form.name], ['Mobile', this.form.phone], ['How can you help', topic],
+                     ['Email', this.form.email], ['Company or institution', this.form.company], ['I am', this.form.role]
+                   ])
                    this.sending = true
                    const payload = { ...this.form, topic: topic, source: 'Nostalgia 2026 QR' }
                    try {
@@ -733,7 +747,8 @@
             <div x-show="sent" x-cloak x-transition class="flex h-full flex-col items-center justify-center py-8 text-center">
               <span class="icon-gold h-16 w-16 rounded-full"><svg class="h-8 w-8"><use href="#i-check"/></svg></span>
               <p class="h-display mt-6 text-3xl">Thank you.</p>
-              <p class="mt-3 max-w-sm text-white/75">We have your details. A RAG team member will message you on WhatsApp.</p>
+              <p class="mt-3 max-w-sm text-white/75">We opened WhatsApp with your details. Press send there and a RAG team member will reply.</p>
+              <a :href="waLink" target="_blank" rel="noopener" class="mt-2 inline-flex min-h-[44px] items-center gap-2 text-sm font-bold text-gold-light hover:text-white"><svg class="h-4 w-4"><use href="#i-wa"/></svg> WhatsApp did not open? Tap here</a>
               <p class="mt-3 max-w-sm text-sm text-white/60">Save our number so you can find us: <a href="tel:+971586046586" class="font-bold text-white">+971 58 604 6586</a>.</p>
               <div class="mt-6 flex flex-wrap justify-center gap-3">
                 <a href="assets/rag-holdings.vcf" download="RAG-Holdings.vcf" class="btn-gold inline-flex h-12 items-center rounded-xl px-6">Save RAG contact</a>
@@ -811,6 +826,10 @@
            // TO CONFIRM: where leads land (CRM or email). Set this to the endpoint once decided.
            endpoint: '',
            async submit() {
+             this.sendToWhatsApp(this.gate ? 'Hi RAG, I scanned your QR at Nostalgia 2026. I would like your corporate deck.' : 'Hi RAG, I scanned your QR at Nostalgia 2026.', [
+               ['Name', this.form.name], ['Email', this.form.email], ['Mobile', this.form.phone],
+               ['Job title', this.form.jobTitle], ['Company', this.form.company], ['LinkedIn', this.form.linkedin], ['Message', this.form.message]
+             ])
              this.sending = true
              const payload = { ...this.form, source: this.gate ? 'Nostalgia 2026 deck download' : 'Nostalgia 2026 popup' }
              try {
@@ -896,8 +915,9 @@
         <div x-show="sent" x-cloak class="flex flex-col items-center py-10 text-center">
           <span class="icon-gold h-16 w-16 rounded-full"><svg class="h-8 w-8"><use href="#i-check"/></svg></span>
           <p class="h-display mt-6 text-3xl">Thank you.</p>
-          <p x-show="!gate" class="mt-3 max-w-sm text-white/75">We have your details. A RAG team member will be in touch soon.</p>
-          <p x-show="gate" x-cloak class="mt-3 max-w-sm text-white/75">The corporate deck is unlocked. Download it, open it, or flip through it on the page.</p>
+          <p x-show="!gate" class="mt-3 max-w-sm text-white/75">We opened WhatsApp with your details. Press send there and a RAG team member will reply.</p>
+          <p x-show="gate" x-cloak class="mt-3 max-w-sm text-white/75">The corporate deck is unlocked. We also opened WhatsApp with your details; press send there.</p>
+          <a :href="waLink" target="_blank" rel="noopener" class="mt-2 inline-flex min-h-[44px] items-center gap-2 text-sm font-bold text-gold-light hover:text-white"><svg class="h-4 w-4"><use href="#i-wa"/></svg> WhatsApp did not open? Tap here</a>
           <div x-show="gate" x-cloak class="mt-6 flex w-full max-w-sm flex-col gap-3">
             <a href="assets/RAG-Holdings-Corporate-Deck-2026.pdf" download="RAG-Holdings-Corporate-Deck-2026.pdf" class="btn-gold inline-flex h-12 items-center justify-center gap-2 rounded-xl px-6">
               <svg class="h-5 w-5"><use href="#i-down"/></svg> Download PDF
